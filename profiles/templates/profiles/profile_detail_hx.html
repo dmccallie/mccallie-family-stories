@@ -1,0 +1,31 @@
+<!-- custom profile template for htmx popup against user's image -->
+<!-- Path: profiles/templates/profiles/profile_detail_hx.html -->
+{% load profile_extras %}
+
+<div>
+
+    <div class="flex items-center justify-center mb-5">
+        {% if profile.profile_image  %}
+            <img class="w-96 h-auto rounded-md" src="{{ profile.profile_image.url }}" 
+                alt="{{ user }}">
+        {% else %}
+        <p>No profile image</p>
+        {% endif %}
+    </div>
+
+    <div class="flex flex-col items-center justify-center mt-4">
+        <h2 class="text-lg lg:text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            {{ profile.user }}</h2>
+        <!-- family tag : tag on one line then bio: bio on the next line -->
+        <div class="flex flex-col items-center justify-center text-sm text-gray-600 dark:text-gray-300 mb-6">
+            <span class="w-30">{{ profile.family_tag }}</span>
+            <span class="">{{ profile.location }} &nbsp;/&nbsp;
+                <span class="">{{ user.profile.birth_month|month_name }} {{ profile.birth_day }}</span>
+            </span>
+        </div>
+        
+        <div class="w-10/12 pb-4 text-lg text-gray-600 dark:text-gray-300">
+            {{ profile.bio }}</div>
+    </div>
+
+</div>

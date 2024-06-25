@@ -1,0 +1,115 @@
+<!-- templates/index.html -->
+
+{% extends "_base.html" %}
+{% load static %}
+
+{% block content %}
+
+<style>
+    {% comment %} .hero {
+        background-image: url('{% static 'images/McCallie-glow-homepage.jpg' %}');
+        height:60vh;
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-size: cover;
+        padding-top: 2vh;
+        padding-bottom: 10vh;
+    } {% endcomment %}
+
+    .hero-image-container {
+        position: relative;
+        width: 100%; /* Adjust as needed */
+        max-width: 1600px; /* Adjust as needed */
+    }
+
+    .hero-image-container img {
+        width: 100%;
+        height: auto;
+    }
+
+    .hero-image-container .hero-text-overlay {
+        position: absolute;
+        top: 25%; /* Adjust as needed */
+        left: 50%; /* Adjust as needed */
+        transform: translate(-50%, -50%);
+        color: white; 
+        padding: 10px;
+        width: 100%; /* Adjust as needed */
+    }
+
+    .hero-image-container .hero-text-overlay h1 {
+        color: rgb(63 131 248 );
+        font-size: 2.3em;
+    }
+    .hero-image-container .hero-text-overlay p {
+        color: green;
+        font-size: 1.5em;
+    }
+
+</style>
+
+<!-- background image -->
+<div class=" relative flex items-center justify-center dark:bg-gray-800">
+
+
+    {% comment %} <h1 class="text-center mb-6 text-3xl light:text-green-800 dark:text-yellow-100">
+    Welcome to McCallie Family Stories</h1>
+    <div class="">
+        <p class="text-center text-lg light:text-green-800 dark:text-yellow-100">
+            A place to share and read stories about the McCallie family
+        </p>
+    </div> {% endcomment %}
+{% comment %} </div>
+    <img class="max-w-full max-h-px:640 w-auto h-px:640"
+        src="{% static 'images/mccallie_glow.jpg' %}" alt="McCallie Family"/> {% endcomment %}
+
+        <div class="hero-image-container" >
+            <a href="{% url 'stories:story_list' %}">
+                <img src="{% static 'images/McCallie-glow-homepage.jpg' %}" alt="Sample Image">
+            </a>
+
+            <div class="hero-text-overlay">
+
+                <h1 class="text-center mb-6 text-3xl light:text-green-800 dark:text-blue-500">
+                    Welcome to McCallie Family Stories</h1>
+                    {% comment %} <div class="text-center text-lg light:text-green-800 dark:text-yellow-100">
+                        <p class=" hidden md:block">Sharing stories about the McCallie family</p>
+                    </div> {% endcomment %}
+                </div>
+
+                <!-- bottom buttons look aweful -->
+                {% comment %} <div class="w-full max-w-lg p-4">
+                    <div class="flex justify-between w-3/4 mx-auto">
+                        <button class="pr-10 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4
+                        focus:outline-none focus:ring-blue-300 font-medium rounded-lg
+                        text-sm sm:w-auto px-4 py-2.5 text-center dark:bg-blue-600
+                        dark:hover:bg-blue-700 dark:focus:ring-blue-800 h-10">
+                            <a class= href="{% url 'stories:story_list' %}">Read</a>
+                        </button>
+
+                        <button class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4
+                        focus:outline-none focus:ring-blue-300 font-medium rounded-lg
+                        text-sm sm:w-auto px-4 py-2.5 text-center dark:bg-blue-600
+                        dark:hover:bg-blue-700 dark:focus:ring-blue-800 h-10">
+                        <a href="{%  url 'stories:add_story' %}">Create</a>
+                    </button>
+
+                    <button class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4
+                    focus:outline-none focus:ring-blue-300 font-medium rounded-lg
+                    text-sm sm:w-auto px-4 py-2.5 text-center dark:bg-blue-600
+                    dark:hover:bg-blue-700 dark:focus:ring-blue-800 h-10">
+                        <a href="{% url 'profiles:profile' %}">Profile</a>
+                    </button>
+                    <button class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4
+                    focus:outline-none focus:ring-blue-300 font-medium rounded-lg
+                    text-sm sm:w-auto px-4 py-2.5 text-center dark:bg-blue-600
+                    dark:hover:bg-blue-700 dark:focus:ring-blue-800 h-10">
+                        <a href="#">Login</a>
+                    </button>
+                   </div>
+                </div>   {% endcomment %}
+        </div>
+
+
+
+{% endblock content %}

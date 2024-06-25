@@ -1,0 +1,249 @@
+<!-- stories/templates/stories/story_list.html -->
+
+{% extends "_base.html" %}
+
+{% load static %}
+
+{% block content %}
+
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+    <h2 class="text-2xl mb-3 text-black dark:text-white">Recent Stories</h2>
+    
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
+
+        {% for story in all_stories %}
+
+            <!-- NOPE - steals clicks make the whole div an active link to the story (tho profile click overrides) -->
+            <div 
+                class="max-w-xs bg-white border border-gray-200 rounded-lg shadow
+                 dark:bg-gray-800 dark:border-gray-700">
+                
+                 <a href="{% url 'stories:story_detail' story.id %}">
+                    {% if story.image %}
+                    <img class="rounded-t-lg" src="{{ story.image.url }}" alt="Image for {{ story.title }}">
+                    {% endif %}
+                </a>
+                
+                <div class="p-5">
+                    <a href="{% url 'stories:story_detail' story.id %}">
+                        <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+                            {{story.title}}</h5>
+                    </a>
+                    <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">
+                        {{ story.summary }}</p>
+                        
+                    <hr class="h-px my-4 bg-gray-600 border-0 dark:bg-gray-400">
+                    
+                    <div
+                        htmx="get"
+                        hx-trigger="click"
+                        hx-get="{% url 'profiles:profile_detail' story.user.id %}"
+                        hx-target="#view_profile_modal_content"
+                        hx-swap="innerHTML"
+                        class="inline-flex items-center mr-3 text-sm text-gray-900 dark:text-white">
+
+                        {% if story.user.profile.profile_image %}
+                            <img class="mr-4 w-12 h-12 rounded-full" src= "{{story.user.profile.profile_image.url}}" alt="{{ user }}">
+                        {% else %}
+                            <svg class="mr-4 w-[48px] h-[48px] text-gray-800 dark:text-white" aria-hidden="true" 
+                            xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="1.0" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0 0a8.949 8.949 0 0 0 4.951-1.488A3.987 3.987 0 0 0 13 16h-2a3.987 3.987 0 0 0-3.951 3.512A8.948 8.948 0 0 0 12 21Zm3-11a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+                        </svg>
+                        {% endif %}
+                        <div>
+                            <a href="#" rel="author" class="text-lg font-medium text-gray-900 dark:text-white">
+                                {{ story.user }}
+                            </a>
+                            {% if story.published %}
+                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                                Published: <time pubdate datetime="" title="">{{ story.published_datetime|timesince }} ago</time>
+                            </p>
+                            <a href="{% url 'stories:edit_story' story.id %}">
+                                <strong>Edit Story</strong></a></p> 
+                            {% else %}
+                            <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">
+                                Story is not yet published - 
+                                <a href="{% url 'stories:edit_story' story.id %}">
+                                    <strong>Edit Story</strong></a></p>     
+                            {% endif %}                       
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% comment %} <hr class="h-px my-4 bg-gray-600 border-0 dark:bg-gray-400">
+        {% empty %}
+        <p>No published stories available.</p> {% endcomment %}
+        {% endfor %}
+        
+        {% for story in unpublished %}
+
+        <div class="max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+            <a href="{% url 'stories:story_detail' story.id %}">
+                {% if story.image %}
+                <img class="rounded-t-lg" src="{{ story.image.url }}" alt="Image for {{ story.title }}">
+                {% endif %}
+            </a>
+            <div class="p-5">
+                <a href="{% url 'stories:story_detail' story.id %}">
+                    <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+                        {{story.title}}</h5>
+                </a>
+                <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">
+                    {{ story.summary }}</p>
+                    
+                <hr class="h-px my-4 bg-gray-600 border-0 dark:bg-gray-400">
+                
+                <div class="inline-flex items-center mr-3 text-sm text-gray-900 dark:text-white">
+                    <img class="mr-4 w-16 h-16 rounded-full" src="https://flowbite.com/docs/images/people/profile-picture-2.jpg" alt="Jese Leos">
+                    <div>
+                        <a href="#" rel="author" class="text-xl font-bold text-gray-900 dark:text-white">
+                            {{ story.user }}
+                        </a>
+                        {% if story.published %}
+                        <p class="text-base text-gray-500 dark:text-gray-400">
+                            Published: <time pubdate datetime="" title="">{{ story.published_datetime|date:"Y-m-d" }}</time>
+                        </p>
+                        {% else %}
+                        <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">
+                            Story is not yet published - 
+                            <a href="{% url 'stories:edit_story' story.id %}">
+                                <strong>Edit Story</strong></a></p>     
+                        {% endif %}                       
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% comment %} <hr class="h-px my-4 bg-gray-600 border-0 dark:bg-gray-400">
+    {% empty %}
+    <p>No published stories available.</p> {% endcomment %}
+    {% endfor %}
+    </div>
+
+    <!-- Modal html for profile modal popup Using flowbite's Modal classes and JS -->
+    <div id="modalEl"
+        tabindex="-1"
+        aria-hidden="true"
+        class="fixed left-0 right-0 top-0 z-50 hidden h-[calc(100%-1rem)]
+        max-h-full w-full overflow-y-auto overflow-x-hidden p-4 md:inset-0"
+    >
+    <div class="relative max-h-full w-full max-w-2xl">
+        
+        <div class="relative rounded-lg bg-white shadow dark:bg-gray-700">
+            
+            <!-- Modal header -->
+            <div 
+                class="flex items-start justify-between rounded-t border-b p-2 dark:border-gray-600"
+            >
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white lg:text-2xl">
+                    Profile
+                </h3>
+                
+                <!-- Close modal button in upper right corner -->
+                <button
+                    type="button"
+                    onclick=modal.hide()
+                    class="ms-auto inline-flex h-8 w-8 items-center justify-center rounded-lg bg-transparent text-sm text-gray-400 hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-gray-600 dark:hover:text-white"
+                >
+                    <svg
+                        class="h-3 w-3"
+                        aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 14 14"
+                    >
+                        <path
+                            stroke="currentColor"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+                        />
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                    
+                </button>
+            </div>
+            
+            <!-- Modal body (under header) -->
+            <div id="view_profile_modal_content">
+                This gets replaced </div>
+            
+            <!-- Modal footer -->
+            <div
+                class="flex items-center justify-center space-x-2 rtl:space-x-reverse rounded-b border-t
+                border-gray-200 p-2 dark:border-gray-600"
+            >
+                <!-- Close button -->
+                <button
+                    type="button"
+                    onclick=modal.hide()
+                    class="rounded-lg bg-blue-700 px-5 py-2.5 text-center text-sm font-medium
+                    text-white hover:bg-blue-800 focus:outline-none focus:ring-4
+                    focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                >
+                    Close
+                </button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block scripts %}
+
+<script>
+    // handle profile modal popup with htmx
+
+    document.addEventListener("htmx:afterSwap", function(event) {
+        console.log('story list page after swap with target id = ', event.detail.target.id);
+        
+        if (event.detail.target.id === "view_profile_modal_content") {
+            modal.show();
+            console.log('ready to show modal');
+        }
+    });
+
+    // testing flowbite modal control with javascript
+
+    // import { Modal } from 'flowbite';
+
+    // set the modal menu element
+    const $targetEl = document.getElementById('modalEl');
+    console.log("got targetEl = ", $targetEl);
+
+    // options with default values
+    const options = {
+        placement: 'center-center',
+        backdrop: 'dynamic',
+        backdropClasses:
+            'bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40',
+        closable: true,
+    };
+
+    // instance options object
+    const instanceOptions = {
+        id: 'modalEl',
+        override: true
+    };    
+
+    /*
+    * $targetEl: required
+    * options: optional
+    */
+    const modal = new Modal($targetEl, options, instanceOptions);
+    console.log("got modal = ", modal);
+
+</script>
+
+{% endblock scripts %}

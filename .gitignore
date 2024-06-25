@@ -1,0 +1,26 @@
+# Story Assets
+/media
+
+# Virtual Environments
+.venv/
+
+# Environ Variables File
+.env
+
+# Temp Files
+__pycache__/
+.DS_Store
+
+# backups
+SAVE_db.sqlite3
+
+# Other
+staticfiles/
+static/src/output.css
+logs/
+debug.log
+.vscode/
+
+db.sqlite3
+db.sqlite3-journal
+

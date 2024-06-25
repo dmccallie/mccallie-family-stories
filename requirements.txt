@@ -1,0 +1,14 @@
+asgiref==3.8.1
+Django==5.0.6
+django-debug-toolbar==4.4.2
+django-htmx==1.17.3
+pillow==10.3.0
+sqlparse==0.5.0
+typing_extensions==4.12.2
+markdown-it-py[plugins]
+whitenoise
+django-storages
+boto3
+python-decouple
+pytailwindcss
+gunicorn

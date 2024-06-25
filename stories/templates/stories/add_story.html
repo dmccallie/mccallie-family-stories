@@ -1,0 +1,639 @@
+{% extends "_base.html" %}
+
+{% load static %}
+
+{% block content %}
+
+<style>
+    .story-image img {
+        max-width: 100%;
+        max-height: 640px;
+        width: auto;
+        height: auto;
+        display: block;  /* Ensures that the image is displayed as a block element */
+        margin: 0 auto;  /* Center the image horizontally if it's smaller than 640px */
+    }
+    .markdown-body img {
+        max-width: 100%;
+        max-height: 640px;
+        width: auto;
+        height: auto;
+        display: block;
+        margin: 0 auto;
+    }
+    .markdown-body {
+        font-family: 'Roboto', sans-serif;
+    }
+
+
+</style>
+
+
+<h1  class="mb-4 text-2xl text-black dark:text-white">
+    {% if form.instance.pk %}Edit Your Story{% else %}Add a New Story{% endif %}
+</h1>
+
+<form method="post" enctype="multipart/form-data" autocomplete="off" >
+    {% csrf_token %}
+
+    {% for hidden in form.hidden_fields %}
+        {{ hidden }}
+    {% endfor %}
+
+    <!-- Hidden input to indicate image removal -->
+    <input type="hidden" name="remove_image" id="remove_image" value="">
+
+    <div class="grid gap-6 mb-6 md:grid-cols-1">
+        
+        <div class="form-group{% if form.title.errors %} has-error{% endif %}">
+            <label for="{{ form.title.id_for_label }}"
+            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            Title:</label>
+            
+            <input type="text" name="{{ form.title.html_name }}" id="{{ form.title.id_for_label }}" 
+                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
+                    focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700
+                     dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500
+                      dark:focus:border-blue-500"
+                    value="{{ form.title.value|default_if_none:'' }}" required>
+            {% for error in form.title.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+    
+        <div class="form-group{% if form.summary.errors %} has-error{% endif %}">
+            <label for="{{ form.summary.id_for_label }}"
+            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            A Short Summary...</label>
+
+            <textarea name="{{ form.summary.html_name }}" id="{{ form.summary.id_for_label }}" 
+                rows="1"    
+                class="text-wrap bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
+                    focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700
+                    dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500
+                    dark:focus:border-blue-500"
+                    required>{{ form.summary.value|default_if_none:'' }}</textarea>
+
+            {% for error in form.summary.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Placeholder for displaying the current or new selected image -->
+        <div class="form-group" id="image-display-section" style="display:{% if form.image.value %} block {% else %} none {%endif %}">
+
+            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                Current Image:
+            </label>    
+            <div class="flex gap-4 justify-start items-center">
+                    <img src= "{% if form.image.value %} {{ form.image.value.url }} {% endif %}" 
+                         id="image-preview" alt="Current Image" style="max-width: 200px; max-height: 200px;">
+                    <button type="button"
+                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4
+                        focus:outline-none focus:ring-blue-300 font-medium rounded-lg
+                        text-sm sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600
+                        dark:hover:bg-blue-700 dark:focus:ring-blue-800 h-10"
+                    onclick="removeImage()">Remove Image</button>
+            </div>
+            {% comment %} {% else %}
+                <img id="image-preview" style="max-width: 200px; max-height: 200px; display: none;">
+            {% endif %} {% endcomment %}
+        </div>
+
+        <!-- Input for selecting a new image -->
+        <div class="" id="image-input-section"
+                    style="display:{% if form.image.value %} none {% else %} block {%endif %}">
+            
+            <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-white"
+                for="{{ form.image.id_for_label }}">
+                Add a Key Image:
+            </label>
+            
+            <!-- hack to get rid of "no file selected" text 
+              make input invisible and create a button to trigger the input -->
+            <input type="file" name="{{ form.image.html_name }}" 
+                id="{{ form.image.id_for_label }}"
+                style="display:none" 
+                accept="image/*"
+                onchange="previewImage();">
+            <button type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4
+                focus:outline-none focus:ring-blue-300 font-medium rounded-lg
+                text-sm sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600
+                dark:hover:bg-blue-700 dark:focus:ring-blue-800 h-10"
+                onclick="document.getElementById('{{ form.image.id_for_label }}').click();">
+                Select Image
+            </button>
+
+                {% for error in form.image.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+                {% endfor %}
+        </div>
+
+        {% comment %} <div class="form-group{% if form.content.errors %} has-error {% endif %}">
+            
+            <label for="{{ form.content.id_for_label }}"
+            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            
+            Content:</label>
+
+        </div> {% endcomment %}
+    </div>
+
+    <!-- wrapper around tab bar and all tab children -->
+    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+        Write a story</label>
+
+    <div class="w-full mb-4 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
+
+        <!-- the tab panel itself -->
+        <div class="mb-2 border-b border-gray-200 dark:border-gray-700">
+            <ul class="flex flex-wrap -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400" id="tabs-for-writing" role="tablist">
+                
+                <li class="me-2" role="presentation">
+                    <button
+                        class="inline-block rounded-t-lg border-b-2 border-transparent p-4 hover:border-gray-300 hover:text-gray-600 dark:hover:text-gray-300"
+                        id="write-tab-button"
+                        type="button"
+                        role="tab"
+                        aria-controls="write-example"
+                        aria-selected="false"
+                    >
+                        Write!
+                    </button>
+                </li>
+                
+                <li class="me-2" role="presentation">
+                    <button
+                        class="inline-block rounded-t-lg border-b-2 border-transparent p-4 hover:border-gray-300 hover:text-gray-600 dark:hover:text-gray-300"
+                        id="preview-tab-button"
+                        type="button"
+                        role="tab"
+                        aria-controls="preview-tab"
+                        aria-selected="false"
+                        hx-post="{%url 'stories:markdown_to_html' %}"
+                        hx-trigger="click"
+                        hx-include="#content"
+                        hx-target="#markdown-preview"
+                        hx-swap="outerHTML"
+                    >
+                        Preview Post
+                    </button>
+                </li>
+                
+                <li class="me-2" role="presentation">
+                    <button
+                        class="inline-block rounded-t-lg border-b-2 border-transparent p-4 hover:border-gray-300 hover:text-gray-600 dark:hover:text-gray-300"
+                        id="settings-tab-example"
+                        type="button"
+                        role="tab"
+                        aria-controls="settings-example"
+                        aria-selected="false"
+                    >
+                        Settings
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <!-- the content for each tab -->
+        <div id="tabContentExample" >
+            
+            <!-- content for the EDITOR and editor toolbar -->
+            <div
+                class="hidden  bg-gray-50 dark:bg-gray-800"
+                id="write-tab-content"
+                role="tabpanel"
+                aria-labelledby="write-tab-content">
+
+                <div class="w-full mb-4 border border-gray-200 rounded-none bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
+                    
+                    <!-- this flex spaces the left side from the right side -->
+                    <div class="flex items-center justify-between px-3 py-2 border-b dark:border-gray-600">
+                        
+                        <!-- groups the left side buttons-->
+                        <div class="flex flex-wrap items-center divide-gray-200 sm:divide-x sm:rtl:divide-x-reverse dark:divide-gray-600">
+                            
+                            <div class="flex items-center space-x-1 rtl:space-x-reverse sm:pe-4">                             
+                                <!-- button triggers the image upload process, returning a ULR for insert into MD text -->
+                                <button type="button" id="uploadImageButton" data-tooltip-target="tooltip-image-upload"
+                                    class="p-2 text-gray-500 rounded cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600">
+                                    <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 20">
+                                        <path d="M14.066 0H7v5a2 2 0 0 1-2 2H0v11a1.97 1.97 0 0 0 1.934 2h12.132A1.97 1.97 0 0 0 16 18V2a1.97 1.97 0 0 0-1.934-2ZM10.5 6a1.5 1.5 0 1 1 0 2.999A1.5 1.5 0 0 1 10.5 6Zm2.221 10.515a1 1 0 0 1-.858.485h-8a1 1 0 0 1-.9-1.43L5.6 10.039a.978.978 0 0 1 .936-.57 1 1 0 0 1 .9.632l1.181 2.981.541-1a.945.945 0 0 1 .883-.522 1 1 0 0 1 .879.529l1.832 3.438a1 1 0 0 1-.031.988Z"/>
+                                        <path d="M5 5V.13a2.96 2.96 0 0 0-1.293.749L.879 3.707A2.98 2.98 0 0 0 .13 5H5Z"/>
+                                    </svg>
+                                    <span class="sr-only">Upload image</span>
+                                </button>
+                                
+                                {% comment %} <!-- hold button for future (format code) -->
+                                <button type="button" class="p-2 text-gray-500 rounded cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600">
+                                    <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 20">
+                                        <path d="M5 5V.13a2.96 2.96 0 0 0-1.293.749L.879 3.707A2.96 2.96 0 0 0 .13 5H5Z"/>
+                                        <path d="M14.067 0H7v5a2 2 0 0 1-2 2H0v11a1.969 1.969 0 0 0 1.933 2h12.134A1.97 1.97 0 0 0 16 18V2a1.97 1.97 0 0 0-1.933-2ZM6.709 13.809a1 1 0 1 1-1.418 1.409l-2-2.013a1 1 0 0 1 0-1.412l2-2a1 1 0 0 1 1.414 1.414L5.412 12.5l1.297 1.309Zm6-.6-2 2.013a1 1 0 1 1-1.418-1.409l1.3-1.307-1.295-1.295a1 1 0 0 1 1.414-1.414l2 2a1 1 0 0 1-.001 1.408v.004Z"/>
+                                    </svg>
+                                    <span class="sr-only">Format code</span>
+                                </button>
+                                
+                                <!-- hold button for future (emoji) -->
+                                <button type="button" class="p-2 text-gray-500 rounded cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600">
+                                    <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM13.5 6a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm-7 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm3.5 9.5A5.5 5.5 0 0 1 4.6 11h10.81A5.5 5.5 0 0 1 10 15.5Z"/>
+                                    </svg>
+                                    <span class="sr-only">Add emoji</span>
+                                </button> {% endcomment %}
+
+                            </div>
+
+                            {% comment %} <!-- button hold for future, left of center but to the right of splitter line -->
+                            <div class="flex flex-wrap items-center space-x-1 rtl:space-x-reverse sm:ps-4">
+                                <button type="button" class="p-2 text-gray-500 rounded cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600">
+                                    <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 21 18">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.5 3h9.563M9.5 9h9.563M9.5 15h9.563M1.5 13a2 2 0 1 1 3.321 1.5L1.5 17h5m-5-15 2-1v6m-2 0h4"/>
+                                    </svg>
+                                    <span class="sr-only">Add list</span>
+                                </button>
+                            </div> {% endcomment %}
+
+                        </div>
+                        
+                        <!-- help button pushed to the far right -->
+                        <button type="button" data-tooltip-target="tooltip-help" 
+                            class="p-2 text-gray-500 rounded cursor-pointer sm:ms-auto hover:text-gray-900
+                             hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600">
+                            <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                            </svg>
+                            <span class="sr-only">Help</span>
+                        </button>
+
+                        <div id="tooltip-help" role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                            Help!
+                            <div class="tooltip-arrow" data-popper-arrow></div>
+                        </div>
+                    
+                    </div>
+            
+                    <!-- Editor -->
+                    <!-- use the Form name "content" for the hidden editor, and "editor_content" for the ACE editor div -->
+                    <div class="relative px-2 py-2 bg-white rounded-none dark:bg-gray-800">
+                        
+                        <label for="editor_content" class="sr-only">Content goes here?</label>
+                        <div id="editor_content" style="height: 500px; ;"></div>
+                        
+                        <!-- the shadow hidden textarea to feed htmx and the form's content field -->
+                        <!-- this is what interacts with the backend -->
+                        <textarea class="hidden" name="content" 
+                            id="content" autocomplete="off">{{form.content.value|default_if_none:''}}</textarea>
+                        
+                            <!-- spinner to block typing during the S3 upload process (image embed)-->
+                            <div id="spinner" class="hidden absolute inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50 z-50">
+                                <div role="status">
+                                    <svg class="w-12 h-12 text-blue-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                                    </svg>
+                                    <span class="sr-only">Loading...</span>
+                                </div>
+
+                        </div>
+                    </div>
+                </div>    
+            </div>
+
+            <!-- content for the preview -->
+            <div
+                class="hidden rounded-lg bg-gray-50 p-4 dark:bg-gray-800"
+                id="preview-tab-content"
+                role="tabpanel"
+                aria-labelledby="preview-tab-content">
+
+                <section class="markdown-body w-auto">
+                    <div id = "markdown-preview" class="markdown-content not-format">
+                        {% if html_content %}
+                            {{ html_content|safe }}
+                        {% else %}
+                            <p>Nothing to preview yet</p>
+                        {% endif %}
+                    </div>
+                </section>
+            </div>
+
+            <!-- content for future settings -->
+            <div
+                class="hidden rounded-lg bg-gray-50 p-4 dark:bg-gray-800"
+                id="settings-example"
+                role="tabpanel"
+                aria-labelledby="settings-tab-example">
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                    Future home for writing settings?.
+                </p>
+            </div>
+        </div>
+
+    </div> <!-- wrapper around both tabs and children -->
+
+    <div class="flex flex-row gap-4 justify-left items-center ">
+        
+        <button class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4
+            focus:outline-none focus:ring-blue-300 font-medium rounded-lg
+            text-sm sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600
+            dark:hover:bg-blue-700 dark:focus:ring-blue-800" 
+        type="submit" name="action" value="save">Save / Finish Later</button>
+
+        <button class=" text-white bg-blue-700 hover:bg-blue-800 focus:ring-4
+            focus:outline-none focus:ring-blue-300 font-medium rounded-lg
+            text-sm sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600
+            dark:hover:bg-blue-700 dark:focus:ring-blue-800" 
+        type="submit" name="action" value="publish">Publish Your Story!</button>    
+    
+    </div>
+
+</form >
+
+<!-- a hidden form to open file search for images to get url for markdown -->
+<form>
+    {% csrf_token %}
+    <input type="file" name="markdown_image" id="imageInput" style="display: none;" accept="image/*">
+</form>
+
+<!-- tooltip content  for editor bar -->
+<div id="tooltip-image-upload" role="tooltip" 
+    class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity
+     duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+    Insert an image from your computer
+    <div class="tooltip-arrow" data-popper-arrow></div>
+</div>
+
+{% endblock content %}
+
+{% block scripts %}
+
+<script>
+
+    // *****************************************************************************************
+    // scripts to handle selecting main story image (outside of markdown)
+    
+    function removeImage() {
+        // document.getElementById('image-preview').style.display = 'none';
+        document.getElementById('image-input-section').style.display = 'block';
+        document.getElementById('image-display-section').style.display = 'none';
+
+        document.getElementById('image-preview').src = ''; // Clear the current image src
+        document.getElementById('{{ form.image.id_for_label }}').value = ''; // Clear the current image input value
+        
+        // Set the hidden input's value to '1' to indicate the prior image should be removed
+        document.getElementById('remove_image').value = '1';
+    }
+    
+    function previewImage() {
+        var file = document.getElementById('{{ form.image.id_for_label }}').files[0];
+        var reader = new FileReader();
+        
+        reader.onloadend = function() {
+            document.getElementById('image-preview').style.display = 'block';
+            document.getElementById('image-preview').src = reader.result; // sets value of <img src>
+            // cannot programmatically set value of a file form security reasons
+            // document.getElementById('{{ form.image.id_for_label }}').value = file.name; 
+        }
+    
+        if (file) {
+            reader.readAsDataURL(file);
+            // document.getElementById('image-preview').style.display = 'block';
+            document.getElementById('image-display-section').style.display = 'block';
+            document.getElementById('image-input-section').style.display = 'none';
+        } else {
+            document.getElementById('image-preview').src = "";
+        }
+    }
+
+    // ****************************************************************************************
+    // routines to handle image upload into markdown
+
+    // Make the toolbar button open the image select dialog
+    document.getElementById('uploadImageButton').addEventListener('click', function() {
+        document.getElementById('imageInput').click();
+    });
+    
+    // Function to update the ACE editor's theme
+    function updateEditorTheme() {
+        // console.log("updateEditorTheme called with cl = ", document.documentElement.classList);
+        if (document.documentElement.classList.contains('dark')) {
+            editor.setTheme("ace/theme/twilight");
+        } else {
+            editor.setTheme("ace/theme/textmate");
+        }
+        
+        // Force re-render by refreshing the editor (iPad / safari fix)
+        editor.resize(true);
+    }
+
+    var editor = ace.edit("editor_content");
+    console.log("editor = ", editor);
+    
+    editor.setTheme("ace/theme/twilight");
+    editor.session.setMode("ace/mode/markdown");
+    
+    // Initialize the editor's theme based on the current mode
+    updateEditorTheme();
+    editor.resize();
+    
+    // document.getElementById('editor').style.fontSize='14px';
+    editor.setOptions({
+        tabSize : 1,
+        highlightSelectedWord : true,
+        fontSize: 14,
+        showLineNumbers: false,
+        // softwrap: false,
+        highlightActiveLine: false,
+        showGutter: false,
+        printMargin: false,
+        wrap: true,
+        // wrapMethod: "text",
+    });
+
+    // Observe changes to the body's documentElement class attribute to detect light/dark mode changes
+    var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.attributeName === 'class') {
+                updateEditorTheme();
+            }
+        });
+    });
+
+    // Start observing the body element for class attribute changes
+    observer.observe(document.documentElement, { attributes: true });
+
+    // load the editor with any initial content from the hidden textarea
+    console.log("ready to set editor with INITIAL content = ", document.getElementById('content').value);
+    editor.session.setValue(document.getElementById('content').value);
+
+    // Function to update the hidden textarea with the editor's content
+    function updateTextarea(evt) {
+        document.getElementById('content').value = editor.getValue();
+    }
+
+    // Update the hidden textarea whenever the editor content changes
+    editor.session.on('change', updateTextarea);
+
+    // Initial update of the hidden textarea with the editor's content
+    // updateTextarea();
+
+    // *****************************************************************************************
+    // routines to handle image upload and return of URL for insert into markdown
+    
+    // Pass Django URL and CSRF values into JavaScript
+    const uploadImageUrl = "{% url 'stories:upload_image' %}";
+    const csrf_token = "{{ csrf_token }}"
+    // const textarea_id = "{{ form.content.id_for_label }}"
+
+    // code to insert image url into markdown /textarea
+    function insertImageMarkdown(url, caption) {
+        // const textarea = document.getElementById(textarea_id);  // Assume your textarea has id="editor"
+        const markdownImage = `\n![${caption}](${url} "add a title here")\n`;
+
+        // experiment with using html
+        // todo add this to the external style sheet?
+        // const markdownImage = 
+        //     `\n<img src=${url} alt=${caption} style="border-radius: 20px; padding: 15px; width:80%;">\n`
+
+        // const cursorPos = textarea.selectionStart;
+        // const textBefore = textarea.value.substring(0, cursorPos);
+        // const textAfter  = textarea.value.substring(cursorPos, textarea.value.length);
+        //textarea.value = textBefore + markdownImage + textAfter;
+        // use editor's api for insertion
+        editor.insert(markdownImage);
+        editor.focus();
+    }
+
+    document.getElementById('imageInput').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        console.log("imageInput found file = ", file);
+
+        if (file) {
+            // add url to a form
+            const formData = new FormData();
+            formData.append('markdown_image', file);
+    
+            showSpinner();
+            // invoke django view that returns JSON, not html!
+            fetch( uploadImageUrl , {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrf_token  // Ensure CSRF token is included
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.url) {
+                    console.log('Image uploaded found data url = :', data.url);
+                    insertImageMarkdown(data.url, "add a caption here");
+
+                } else {
+                    alert('Image upload failed');
+                }
+                hideSpinner();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Image upload failed');
+                hideSpinner();
+            });
+
+        }
+    });    
+
+    // *****************************************************************************************
+    // tabs
+
+    let tabs = null;
+
+    // id for the tab container
+    const tabsElement = document.getElementById('tabs-for-writing');
+
+    // create an array of objects with the id, trigger element (eg. button), and the content element
+    const tabElements = [
+        {
+            id: 'write',
+            triggerEl: document.querySelector('#write-tab-button'), // the button id
+            targetEl: document.querySelector('#write-tab-content'), // the content id of hidden div containing content
+        },
+        {
+            id: 'preview',
+            triggerEl: document.querySelector('#preview-tab-button'),
+            targetEl: document.querySelector('#preview-tab-content'),
+        },
+        {
+            id: 'settings',
+            triggerEl: document.querySelector('#settings-tab-example'),
+            targetEl: document.querySelector('#settings-example'),
+        },
+    ];
+
+    // options with default values
+    const options = {
+        defaultTabId: 'write', // the id of the tab to show by default
+        activeClasses:
+            'text-blue-600 hover:text-blue-600 dark:text-blue-500 dark:hover:text-blue-400 border-blue-600 dark:border-blue-500',
+        inactiveClasses:
+            'text-gray-500 hover:text-gray-600 dark:text-gray-400 border-gray-100 hover:border-gray-300 dark:border-gray-700 dark:hover:text-gray-300',
+        onShow: () => {
+            let save_button = document.querySelector('button[value="save"]');
+            let publish_button = document.querySelector('button[value="publish"]');
+
+            if (tabs && tabs._activeTab.id === 'preview') {
+                console.log('preview tab was opened');
+                // inactivate the save/publish buttons when in preview mode
+                save_button.disabled = true;
+                publish_button.disabled = true;
+                // set some class values to make the buttons look inactive
+                save_button.classList.add('cursor-not-allowed', 'opacity-50');
+                publish_button.classList.add('cursor-not-allowed', 'opacity-50');
+
+            } else if (tabs && tabs._activeTab.id === 'write') {
+                console.log('write tab was opened');
+                // activate the save/publish buttons when in write mode
+                save_button.disabled = false;
+                publish_button.disabled = false;
+                // remove the class values to make the buttons look active
+                save_button.classList.remove('cursor-not-allowed', 'opacity-50');
+                publish_button.classList.remove('cursor-not-allowed', 'opacity-50');
+                
+                // set focus each time the write tab is opened
+                editor.focus();
+            }
+        },
+    };
+
+    // instance options with default values
+    const instanceOptions = {
+    id: 'tabs-for-writing',
+    override: true
+    };
+
+    /*
+    * tabsElement: parent element of the tabs component (required)
+    * tabElements: array of tab objects (required)
+    * options (optional)
+    * instanceOptions (optional)
+    */
+    tabs = new Tabs(tabsElement, tabElements, options, instanceOptions);
+    
+    // ensure the hidden markdown field is empty at start
+    // document.getElementById('editor_textarea').value = "";
+
+    // show spinner during long uploads to S3
+
+    function showSpinner() {
+        // console.log("showSpinner called");
+        document.getElementById('spinner').classList.remove('hidden');
+    }
+    
+    function hideSpinner() {
+        // console.log("hideSpinner called");
+        document.getElementById('spinner').classList.add('hidden');
+    }
+    
+</script>
+
+
+{% endblock scripts %}

@@ -1,0 +1,263 @@
+
+
+{% extends "_base.html" %}
+
+{% load static %}
+
+
+{% block content %}
+
+<h1  class="text-2xl text-black dark:text-white">
+    {% if form.instance.pk %}Edit Your Story{% else %}Add a New Story{% endif %}
+</h1>
+
+
+
+<form method="post" enctype="multipart/form-data" autocomplete="off">
+
+    {% csrf_token %}
+
+    {% for hidden in form.hidden_fields %}
+        {{ hidden }}
+    {% endfor %}
+
+    <!-- Hidden input to indicate image removal -->
+    <input type="hidden" name="remove_image" id="remove_image" value="">
+
+    <div class="grid gap-6 mb-6 md:grid-cols-1">
+        
+        <div class="form-group{% if form.title.errors %} has-error{% endif %}">
+            <label for="{{ form.title.id_for_label }}"
+            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            Title:</label>
+            
+            <input type="text" name="{{ form.title.html_name }}" id="{{ form.title.id_for_label }}" 
+                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
+                    focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700
+                     dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500
+                      dark:focus:border-blue-500"
+                    value="{{ form.title.value|default_if_none:'' }}" required>
+            {% for error in form.title.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+    
+        <div class="form-group{% if form.summary.errors %} has-error{% endif %}">
+            <label for="{{ form.summary.id_for_label }}"
+            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            Summary:</label>
+
+            <input type="text" name="{{ form.summary.html_name }}" id="{{ form.summary.id_for_label }}" 
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
+                    focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700
+                    dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500
+                    dark:focus:border-blue-500"
+                    required value="{{ form.summary.value|default_if_none:'' }}">
+            </input>
+            {% for error in form.summary.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="form-group{% if form.content.errors %} has-error{% endif %}">
+            <label for="{{ form.content.id_for_label }}"
+            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            
+            <!-- toolbar here Triggers image upload via JS down at bottom  Form also is below -->
+            <div id="toolbar" class="flex flex-row gap-5 justify-start items-center">
+                <button type="button" id="uploadImageButton" class="px-5">
+                    Add Image
+                </button>
+                <button type="button" id="uploadImageButton" class="px-5"
+                    hx-post="{%url 'stories:markdown_to_html' %}"
+                    hx-trigger="click"
+                    hx-include="#{{ form.content.id_for_label }}"
+                    hx-target="#markdown-preview"
+                    hx-swap="outerHTML">
+                    Show Preview
+                </button>
+                {% comment %} <input type="file" name="image" id="imageInput" style="display: none;" accept="image/*"
+                    hx-post={% url 'stories:upload_image' %} hx-trigger="change">
+                </input> {% endcomment %}
+                {% comment %} <input type="file" name="markdown_image" id="imageInput" style="display: none;" accept="image/*"> {% endcomment %}
+
+            </div>
+
+            Content:</label>
+            <textarea name="{{ form.content.html_name }}" id="{{ form.content.id_for_label }}" 
+                rows="8" 
+                class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border
+                    border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700
+                    dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
+                    dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                placeholder="Tell us your story..."           
+                required
+
+
+                >{{form.content.value|default_if_none:''}}</textarea>
+            {% for error in form.content.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Placeholder for displaying the current or new selected image -->
+        <div class="form-group" id="image-display-section" style="display:{% if form.image.value %} block {% else %} none {%endif %}">
+
+            <label>Current Image:</label>    
+                <div class="flex gap-4 justify-start items-center">
+
+                        <img src= "{% if form.image.value %} {{ form.image.value.url }} {% endif %}" id="image-preview" alt="Current Image" style="max-width: 200px; max-height: 200px;">
+                        <button type="button"
+                            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4
+                            focus:outline-none focus:ring-blue-300 font-medium rounded-lg
+                            text-sm sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600
+                            dark:hover:bg-blue-700 dark:focus:ring-blue-800 h-10"
+                        onclick="removeImage()">Delete Image</button>
+
+                </div>
+            {% comment %} {% else %}
+                <img id="image-preview" style="max-width: 200px; max-height: 200px; display: none;">
+            {% endif %} {% endcomment %}
+        </div>
+
+        <!-- Input for selecting a new image -->
+        <div class="form-group" id="image-input-section"
+                    style="display:{% if form.image.value %} none {% else %} block {%endif %}">
+            <label for="{{ form.image.id_for_label }}">Image:</label>
+            <input type="file" name="{{ form.image.html_name }}" id="{{ form.image.id_for_label }}" 
+            class="form-control-file" 
+            onchange="previewImage();">
+            {% for error in form.image.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        {% comment %} {{form.image}} {% endcomment %}
+
+    </div>
+
+    <button class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4
+        focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full
+        sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700
+        dark:focus:ring-blue-800" 
+    type="submit" name="action" value="save">Save</button>
+
+    <button class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4
+    focus:outline-none focus:ring-blue-300 font-medium rounded-lg
+    text-sm sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600
+    dark:hover:bg-blue-700 dark:focus:ring-blue-800 w-36" 
+    type="submit" name="action" value="publish">Publish Your Story!</button>
+
+</form>
+
+<!-- test markdown conversion -->
+
+<h2>HTML Output</h2>
+<section class=" markdown-body ">
+{% comment %} <section class=" format lg:format-lg dark:format-invert"> {% endcomment %}
+        <div id = "markdown-preview" class="p-4 bg-red-300">
+    {{ html_content|safe }}
+</div>
+</section>
+
+<!-- hidden form to capture images for markdown insertion -->
+<form>
+    {% csrf_token %}
+    <input type="file" name="markdown_image" id="imageInput" style="display: none;" accept="image/*">
+</form>
+
+{% endblock content %}
+
+
+{% block scripts %}
+<script>
+    function removeImage() {
+        // document.getElementById('image-preview').style.display = 'none';
+        document.getElementById('image-input-section').style.display = 'block';
+        document.getElementById('image-display-section').style.display = 'none';
+
+        document.getElementById('image-preview').src = ''; // Clear the current image src
+        document.getElementById('{{ form.image.id_for_label }}').value = ''; // Clear the current image input value
+        
+        
+        // Set the hidden input's value to '1' to indicate the prior image should be removed
+        document.getElementById('remove_image').value = '1';
+    }
+    
+    function previewImage() {
+        var file = document.getElementById('{{ form.image.id_for_label }}').files[0];
+        var reader = new FileReader();
+        
+        reader.onloadend = function() {
+            document.getElementById('image-preview').style.display = 'block';
+            document.getElementById('image-preview').src = reader.result;
+            // cannot programmatically set value of a file form security reasons
+            // document.getElementById('{{ form.image.id_for_label }}').value = file.name; 
+        }
+    
+        if (file) {
+            reader.readAsDataURL(file);
+            // document.getElementById('image-preview').style.display = 'block';
+            document.getElementById('image-display-section').style.display = 'block';
+            document.getElementById('image-input-section').style.display = 'none';
+        } else {
+            document.getElementById('image-preview').src = "";
+        }
+    }
+
+    // routines to handle image upload into markdown
+    // Make the toolbar button open the image select dialog
+    document.getElementById('uploadImageButton').addEventListener('click', function() {
+        document.getElementById('imageInput').click();
+    });
+
+
+    // Pass Django URL and CSRF to JavaScript
+    const uploadImageUrl = "{% url 'stories:upload_image' %}";
+    const csrf_token = "{{ csrf_token }}"
+    const textarea_id = "{{ form.content.id_for_label }}"
+
+    // code to insert image url into markdown /textarea
+    function insertImageMarkdown(url, caption) {
+        const textarea = document.getElementById(textarea_id);  // Assume your textarea has id="editor"
+        const markdownImage = `![${caption}](${url})`;
+        const cursorPos = textarea.selectionStart;
+        const textBefore = textarea.value.substring(0, cursorPos);
+        const textAfter  = textarea.value.substring(cursorPos, textarea.value.length);
+
+        textarea.value = textBefore + markdownImage + textAfter;
+    }
+
+    document.getElementById('imageInput').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        console.log("imageInput found file = ", file);
+
+        if (file) {
+            const formData = new FormData();
+            formData.append('markdown_image', file);
+    
+            fetch( uploadImageUrl , {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrf_token  // Ensure CSRF token is included
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.url) {
+                    console.log('Image uploaded found data url = :', data.url);
+                    insertImageMarkdown(data.url, "dummy caption here");
+                } else {
+                    alert('Image upload failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Image upload failed');
+            });
+        }
+    });    
+
+    </script>
+{% endblock scripts %}

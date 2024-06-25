@@ -1,0 +1,29 @@
+
+version: '3'
+services:
+  app:
+    build: .
+    restart: always
+    command: ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2", "--timeout", "60", "--log-level", "debug"]
+    volumes:
+      - .:/usr/src/app
+      - /home/david/python_projects/mccallie-family-stories/staticfiles:/usr/src/app/staticfiles
+      - /home/david/python_projects/mccallie-family-stories/media:/usr/src/app/media
+      - /home/david/python_projects/mccallie-family-stories/logs/gunicorn:/usr/src/app/logs/gunicorn
+
+    expose:
+      - "8000"
+
+  nginx:
+      build:
+        context: ./nginx  
+        dockerfile: Dockerfile.nginx
+      ports:
+        - "80:80"
+      volumes:
+        - /home/david/python_projects/mccallie-family-stories/staticfiles:/usr/src/app/staticfiles
+        - /home/david/python_projects/mccallie-family-stories/media:/usr/src/app/media
+        - /home/david/python_projects/mccallie-family-stories/logs/nginx:/usr/src/app/logs/nginx
+      depends_on:
+        - app
+

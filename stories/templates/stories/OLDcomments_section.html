@@ -1,0 +1,41 @@
+<!-- comments_section.html Called from story_detail, passing in context.  -->
+<div id="comments-section">
+    <!-- Form for adding a new top-level comment -->
+    
+    <form hx-post="{% url 'stories:add_comment' story.id %}" hx-target="#comments-section" hx-swap="outerHTML">
+        {% csrf_token %}
+        <textarea name="content" placeholder="Add top level comment" required></textarea>
+        <button type="submit">Add Comment</button>
+    </form>
+    
+    {% for item in comment_tree %}
+        <article class="p-2 mb-2 text-base bg-white rounded-lg dark:bg-gray-900">
+            
+            <p class="text-sm">By {{ item.comment.author }} on {{ item.comment.published_date }}</p>
+            {{ item.comment.content }}
+            
+            <!-- Form for replying to a comment -->
+            <form hx-post="{% url 'stories:add_comment' story.id %}" hx-target="#comments-section" hx-swap="outerHTML">
+                {% csrf_token %}
+                <textarea name="content" rows=1 placeholder="Reply to this comment" required></textarea>
+                <input type="hidden" name="parent_id" value="{{ item.comment.id }}">
+                <button type="submit"
+                    class="flex items-center font-medium text-sm text-gray-500 hover:underline dark:text-gray-400">
+                    <svg class="mr-1.5 w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 18">
+                    <path d="M18 0H2a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h2v4a1 1 0 0 0 1.707.707L10.414 13H18a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2Zm-5 4h2a1 1 0 1 1 0 2h-2a1 1 0 1 1 0-2ZM5 4h5a1 1 0 1 1 0 2H5a1 1 0 0 1 0-2Zm2 5H5a1 1 0 0 1 0-2h2a1 1 0 0 1 0 2Zm9 0h-6a1 1 0 0 1 0-2h6a1 1 0 1 1 0 2Z"/>
+                    </svg>
+                Reply
+                </button>
+            </form>
+        </article>
+
+        <!-- Render nested comments -->
+        {% if item.replies %}
+            <div class="replies">
+                {% include "stories/comments_snippet.html" with comment_tree=item.replies story=story %}
+            </div>
+        {% endif %}
+
+    {% endfor %}
+
+</div>

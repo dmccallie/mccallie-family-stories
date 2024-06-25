@@ -1,0 +1,10 @@
+<!-- the p-4 insets the text from editor's window. Not used on final display 
+     the not-format is necessary to kill weird flowbite blockquote marks -->
+     
+<div id = "markdown-preview" class="markdown-body p-4 not-format">
+    {% if html_content %}
+        {{ html_content|safe }}
+    {% else %}
+        <p>Nothing to preview yet</p>
+    {% endif %}
+</div>

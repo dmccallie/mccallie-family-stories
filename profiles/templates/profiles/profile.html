@@ -1,0 +1,196 @@
+{% extends "_base.html" %}
+
+{% load profile_extras %}
+
+{% block content %}
+
+  <!-- Capture /update the current user's profile
+       ToDo - make this user-specific for admin use?
+  -->
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  
+    {% comment %} {% if user.profile %}
+      <p>Profile updated: {{ user.profile.created }}</p>
+    {% endif %} {% endcomment %}
+
+  <form method="post" enctype="multipart/form-data" autocomplete="off"
+    class="max-w-screen-lg mx-auto ">
+
+    {% csrf_token %}
+
+    <h1 class="mb-4 text-3xl font-semibold  text-center text-black dark:text-white max-w-sm mx-auto">
+      Hello {{ user.username }}!<br>Update your Profile
+    </h1>
+
+    <!-- Hidden input to indicate image removal -->
+    <input type="hidden" name="remove_image" id="remove_image" value="">
+
+    <label for="id_family_tag"
+      class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+      Family tag:</label>
+    <input type="text" name="family_tag" value="{{form.family_tag.value}}" maxlength="30" id="id_family_tag"
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
+        focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700
+        dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
+        dark:focus:ring-blue-500 dark:focus:border-blue-500">  
+
+    <label for="id_bio"
+      class="block mt-4 mb-2 text-sm font-medium text-gray-900 dark:text-white">
+      Brief Bio:</label>
+    <textarea name="bio" cols="46" rows="8" maxlength="500" id="id_bio"
+      class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50
+      rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500
+      dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400
+      dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">{{form.bio.value|default_if_none:''}}</textarea>
+
+    <label for="id_location"
+      class="block mt-4 mb-2 text-sm font-medium text-gray-900 dark:text-white">Your Current Location:
+    </label>
+    <input type="text" name="location" value="{{ form.location.value}}" maxlength="45" id="id_location"
+      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
+        focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700
+        dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
+        dark:focus:ring-blue-500 dark:focus:border-blue-500">
+  
+    
+    <label for="id_birth_month"
+      class="block mt-4 mb-2 text-sm font-medium text-gray-900 dark:text-white">
+      Birth month:</label>
+
+    <select name="birth_month" id="id_birth_month"
+      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm
+       rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5
+        dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400
+         dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+      {% for value, month in form.birth_month.field.choices %}
+      <option value="{{ value }}" {% if form.birth_month.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ month }}</option>
+      {% endfor %}
+    </select>
+
+    <label for="id_birth_day"
+      class="block mt-4 mb-2 text-sm font-medium text-gray-900 dark:text-white">
+      Birth day:</label>
+    
+    <select name="birth_day" id="id_birth_day"
+      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm
+       rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5
+        dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400
+         dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+      {% for value, day in form.birth_day.field.choices %}
+      <option value="{{ value }}" {% if form.birth_day.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ day }}</option>
+      {% endfor %}
+    </select>    
+
+    <!-- Placeholder for displaying the current or new selected image -->
+    <div class="" id="image-display-section" 
+      style="display:{% if user.profile.profile_image %} block {% else %} none {%endif %}">
+
+      <label for="id_profile_image"
+        class="block mt-4 mb-2 text-sm font-medium text-gray-900 dark:text-white">
+        Profile image:</label>
+
+      <div class="flex gap-4 justify-start items-center">
+        <img src="{% if user.profile.profile_image %} {{ user.profile.profile_image.url }} {% endif %}" 
+            id="image-preview" alt="Current Image" style="max-width: 300px; max-height: 300px;">
+        <button type="button"
+            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4
+            focus:outline-none focus:ring-blue-300 font-medium rounded-lg
+            text-sm sm:w-auto px-2 py-2.5 text-center dark:bg-blue-600
+            dark:hover:bg-blue-700 dark:focus:ring-blue-800 h-10"
+            onclick="removeImage()">
+            Remove
+        </button>
+      </div>
+    </div>
+
+    <!-- section to select new profile image (if none exists) -->
+    <div class="" id="image-input-section"
+      style="display:{% if user.profile.profile_image %} none {% else %} block {%endif %}">
+
+      <!-- hack to get rid of "no file selected" text 
+      make input invisible and create a button to trigger the input -->
+      <input type="file" name="profile_image" 
+        id="id_profile_image"
+        style="display:none" 
+        accept="image/*"
+        onchange="previewImage();">
+      <button type="button" class="mb-10 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4
+        focus:outline-none focus:ring-blue-300 font-medium rounded-lg
+        text-sm sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600
+        dark:hover:bg-blue-700 dark:focus:ring-blue-800 h-10"
+        onclick="document.getElementById('id_profile_image').click();">
+        Select Image
+      </button>
+
+    </div>
+    
+    <button type="submit"
+      class="mt-12 block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4
+      focus:outline-none focus:ring-blue-300 font-medium rounded-lg
+      text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700
+      dark:focus:ring-blue-800" >
+    Save Updated Profile</button>
+  
+  </form>
+  
+  {% comment %} {% if user.profile.profile_image %}
+    <div>
+      <img class="max-w-sm max-h-[300px] w-auto h-auto m-auto" src="{{ user.profile.profile_image.url }}" alt="Profile Image">
+    </div>
+    <form method="post" action="{% url 'profiles:delete_profile_image' %}">
+      {% csrf_token %}
+      <button type="submit">Delete Image</button>
+    </form>
+  {% endif %} {% endcomment %}
+
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+
+    // *****************************************************************************************
+    // scripts to handle add, change, delete profile image
+    function removeImage() {
+
+        document.getElementById('image-input-section').style.display = 'block';
+        document.getElementById('image-display-section').style.display = 'none';
+
+        document.getElementById('image-preview').src = ''; // Clear the current image src
+        document.getElementById('id_profile_image').value = ''; // Clear the current image input value
+        
+        // Set the hidden input's value to '1' to indicate the prior image should be removed
+        document.getElementById('remove_image').value = '1';    
+    }
+    
+    // if user selects image, fetch and show it locally
+    function previewImage() {
+      
+      var file = document.getElementById('id_profile_image').files[0];
+      var reader = new FileReader();
+      
+      reader.onloadend = function() {
+          document.getElementById('image-preview').style.display = 'block';
+          document.getElementById('image-preview').src = reader.result; // sets value of <img src>
+          // cannot programmatically set value of a file form security reasons
+          // document.getElementById('{{ form.image.id_for_label }}').value = file.name; 
+      }
+  
+      if (file) {
+          reader.readAsDataURL(file);
+          // document.getElementById('image-preview').style.display = 'block';
+          document.getElementById('image-display-section').style.display = 'block';
+          document.getElementById('image-input-section').style.display = 'none';
+      } else {
+          document.getElementById('image-preview').src = "";
+      }
+    }
+</script>
+
+{% endblock scripts %}
