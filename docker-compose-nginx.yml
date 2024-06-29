@@ -4,6 +4,9 @@ services:
   app:
     build: .
     restart: always
+    env_file:
+      - .env  # watch out for holdovers from the previous configuration use "unset DEBUG" to remove the DEBUG variable
+
     command: ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2", "--timeout", "60", "--log-level", "debug"]
     volumes:
       - .:/usr/src/app

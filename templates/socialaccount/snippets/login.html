@@ -1,0 +1,21 @@
+<!-- dpm override of allauth socialaccounts/snippet/login template -->
+ 
+{% load i18n %}
+{% load allauth %}
+{% load socialaccount %}
+
+
+{% get_providers as socialaccount_providers %}
+{% if socialaccount_providers %}
+
+    {% if not SOCIALACCOUNT_ONLY %}
+        {% element hr %}
+        {% endelement %}
+        {% element h2 %}
+            {% translate "Or use a THIRD-party" %}
+        {% endelement %}
+    {% endif %}
+    {% comment %} socialaccount_providers: {{ socialaccount_providers }} {% endcomment %}
+    {% include "socialaccount/snippets/provider_list.html" with process="login" %}
+    {% include "socialaccount/snippets/login_extra.html" %}
+{% endif %}

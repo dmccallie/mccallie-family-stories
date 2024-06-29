@@ -12,3 +12,4 @@ boto3
 python-decouple
 pytailwindcss
 gunicorn
+django-allauth[socialaccount]
