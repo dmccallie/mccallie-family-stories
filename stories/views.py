@@ -11,6 +11,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
 from django.utils import timezone
 from django.core.files.storage import default_storage
+from django.core.paginator import Paginator
 
 # Create your views here.
 def story_test(request, id):
@@ -33,10 +34,19 @@ def story_list(request):
     # and get unpublished stories, order them by the last updated date
     # unpublished = Story.objects.filter(published=False).order_by('-last_updated')
 
-    all_stories = Story.objects.all().order_by('-last_updated')
+    # all_stories = Story.objects.all().order_by('-last_updated')
+    page_number = request.GET.get('page', 1)
+    paginator = Paginator(Story.objects.all().order_by('-last_updated'), 20)
+    page_obj = paginator.get_page(page_number)
+
+    if request.htmx:
+        print("got htmx request for page = ", page_number)
+        return render(request, 'stories/story_list_stories.html', {'published': None, 'unpublished': None, 'page_obj': page_obj})
     
-    return render(request, 'stories/story_list.html', 
-                  {'published': None, 'unpublished': None, 'all_stories': all_stories})
+    else:
+        print("got regular request for INITIAL page = ", page_number)
+        return render(request, 'stories/story_list.html', 
+                  {'published': None, 'unpublished': None, 'page_obj': page_obj}) # test just ret 1 page
 
 
 @login_required

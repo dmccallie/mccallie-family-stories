@@ -7,17 +7,19 @@
   <!-- Capture /update the current user's profile
        ToDo - make this user-specific for admin use?
   -->
-    {% if messages %}
+    {% comment %} {% if messages %}
       <ul>
         {% for message in messages %}
           <li>{{ message }}</li>
         {% endfor %}
       </ul>
-    {% endif %}
+    {% endif %} {% endcomment %}
   
     {% comment %} {% if user.profile %}
       <p>Profile updated: {{ user.profile.created }}</p>
     {% endif %} {% endcomment %}
+
+ 
 
   <form method="post" enctype="multipart/form-data" autocomplete="off"
     class="max-w-screen-lg mx-auto ">
@@ -138,6 +140,10 @@
     Save Updated Profile</button>
   
   </form>
+
+  <div class="mt-4">
+    <a href="{% url 'account_change_password' %}" class="text-lg fb-link">Change Your Password</a>
+  </div>
   
   {% comment %} {% if user.profile.profile_image %}
     <div>

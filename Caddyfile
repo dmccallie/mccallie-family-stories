@@ -1,4 +1,4 @@
-stories.davidmccallie.com {
+mccalliefamilystories.com {
     reverse_proxy django:8000
 
     root * /usr/src/app/staticfiles

@@ -25,6 +25,7 @@ ALLOWED_HOSTS = ['*'] # allows local LAN testing at 0.0.0.0:8000
 # doesn't seem to interfere with local development, but necessary for production (caddy)
 CSRF_TRUSTED_ORIGINS = [
     'https://stories.davidmccallie.com',
+    'https://mccalliefamilystories.com',
 ]
 
 # added this section for allauth
@@ -107,6 +108,7 @@ TEMPLATES = [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
+                'django.template.context_processors.csrf',  # dpm added this for allauth???
                 'django.contrib.messages.context_processors.messages',
                 
                  # `allauth` needs this from django
@@ -233,6 +235,18 @@ MEDIA_URL = f'https://{bucket_name}.s3.amazonaws.com/'
 # auth settings
 LOGIN_REDIRECT_URL = 'home:home'
 LOGOUT_REDIRECT_URL = 'home:home'
+
+# email settings
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'mail.noip.com' # 'smtp.gmail.com' # 'mail.noip.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_HOST_USER = 'admin@mccalliefamilystories.com' # 'dmccallie@gmail.com' # 'admin@mccalliefamilystories.com'
+EMAIL_HOST_PASSWORD = 'mccallieclan1!' # 'njou gkea wgzz mbla' #'mccallieclan1!'
+
+# gmail njou gkea wgzz mbla
 
 LOGGING = {
     'version': 1,
