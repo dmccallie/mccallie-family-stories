@@ -13,3 +13,4 @@ python-decouple
 pytailwindcss
 gunicorn
 django-allauth[socialaccount]
+faker

@@ -22,7 +22,13 @@ class Story(models.Model):
     content = models.TextField(max_length=100000, blank=False, null=False)
     
     # this is the main story image, outside of any markdown images
+    # this requires upload of the image which is then resized and saved to AWS S3
     image = models.ImageField(upload_to='images/', blank=True, null=True)
+
+    # this is a pure image url, mostly used for testing to avoid spamming S3
+    # NOTE that you must use the "get_image_url" method to get the image url in templates!!
+
+    image_url = models.URLField(blank=True, null=True)
 
     # todo rename this to author
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
@@ -34,6 +40,15 @@ class Story(models.Model):
     def __str__(self):
         return self.title
     
+    # see which kind of image storage and return the right URL
+    def get_image_url(self):
+        if self.image:
+            return self.image.url
+        elif self.image_url:
+            return self.image_url
+        else:
+            return None
+
     # assuming reverse chrono list display, "next" is older, "previous" is newer
     def get_next_story(self):
         next_story = Story.objects.filter(last_updated__gt=self.last_updated).order_by('last_updated').first()
@@ -42,6 +57,7 @@ class Story(models.Model):
     def get_previous_story(self):
         previous_story = Story.objects.filter(last_updated__lt=self.last_updated).order_by('-last_updated').first()
         return previous_story
+    
 
 class Comment(models.Model):
     story = models.ForeignKey(Story, on_delete=models.CASCADE, related_name='comments')

@@ -1,0 +1,152 @@
+<!-- content for a single story (for list or for updates) -->
+
+<!-- sets the id and flex-grow -->
+<div id="story_{{story.id}}" class="a_story flex flex-col">
+            
+    <!-- sets the border and flex-grow wapping whole story -->
+    <div 
+        {% if story.published %}
+            class="flex-grow max-w-xs bg-white border border-gray-200 rounded-lg shadow
+            dark:bg-gray-800 dark:border-gray-700"
+        {% else %}
+            class="flex-grow max-w-xs bg-white border border-red-600 rounded-lg shadow
+            dark:bg-gray-800 dark:border-red-600"
+        {% endif %}
+        >
+        
+        <!-- link image click to view the full story detail -->
+        <a href="{% url 'stories:story_detail' story.id %}">
+            {% if story.get_image_url %}
+            <img class="max-width:100% max-height: 300px w-auto h-auto m-auto
+                rounded-t-lg" src="{{ story.get_image_url }}" alt="Image for {{ story.title }}">
+            {% endif %}
+        </a>
+        
+        <!-- wrap title, summary, and author details -->
+        <div class="p-5">
+            <a href="{% url 'stories:story_detail' story.id %}">
+                <h5 class="mb-2 text-lg font-bold tracking-tight text-gray-900 dark:text-white">
+                    {{story.title}}</h5>
+            </a>
+            <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">
+                {{ story.summary|truncatewords:10 }}</p>
+                
+            <hr class="h-px my-4 bg-gray-600 border-0 dark:bg-gray-400">
+            
+            <!-- author details inline flex plus htmx trigger to show profile modal popup -->
+            <div class="inline-flex items-center mr-3 text-sm text-gray-900 dark:text-white">
+
+                <!-- trigger htmx profile only over the image -->
+                <div 
+                    htmx="get"
+                    hx-trigger="click"
+                    hx-get="{% url 'profiles:profile_detail' story.user.id %}"
+                    hx-target="#view_profile_modal_content"
+                    hx-swap="innerHTML">
+                    {% if story.user.profile.profile_image %}
+                        <img class="cursor-pointer mr-4 w-14 h-14 rounded-full" src= "{{story.user.profile.profile_image.url}}" alt="{{ user }}">
+                    {% else %}
+                        <svg class="cursor-pointer mr-4 w-[56px] h-[56px] text-gray-800 dark:text-white" aria-hidden="true" 
+                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="1.0" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0 0a8.949 8.949 0 0 0 4.951-1.488A3.987 3.987 0 0 0 13 16h-2a3.987 3.987 0 0 0-3.951 3.512A8.948 8.948 0 0 0 12 21Zm3-11a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+                    </svg>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <span htmx="get"
+                        hx-trigger="click"
+                        hx-get="{% url 'profiles:profile_detail' story.user.id %}"
+                        hx-target="#view_profile_modal_content"
+                        hx-swap="innerHTML" 
+                        class="cursor-pointer text-lg font-medium text-gray-900 dark:text-white">
+                            {{ story.user }}
+                </span>
+
+                    {% if story.published %}
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                        Published: <time pubdate datetime="" title="">{{ story.published_datetime|timesince }} ago</time>
+                    </p>
+                    {% else %}
+                    <p class="mb-3 font-normal text-red-600 dark:text-red-500">
+                        Story is UNPUBLISHED</p>
+                    {% endif %}
+
+                    <button id="dropdownDefaultButton_{{story.id}}" data-dropdown-toggle="dropdown_{{story.id}}"
+                        class="inline-block rounded-b border border-gray-200 p-1 dark:border-gray-600"
+                        {% comment %} hx-post="{% url 'stories:get_story_menu' story.id %}"
+                        hx-target="#modal_popup_menu_content"
+                        hx-swap="outerHTML"
+                        hx-trigger="click" {% endcomment %}
+                        >
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- magic infinite scroll, learned from https://www.photondesigner.com/articles/infinite-scroll-htmx-django -->
+    {% if page_obj.has_next and forloop.last %}
+        <div class="" hx-get="{% url 'stories:story_list' %}?page={{ page_obj.next_page_number }}"
+                hx-swap="beforeend" hx-target="#stories" hx-select=".a_story"
+                hx-trigger="revealed">
+        </div>
+    {% endif %}
+
+    <!-- include hidden modal for the pop up menu inside each story -->
+    <!-- Dropdown menu -->
+    <div id="dropdown_{{story.id}}" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
+        <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownDefaultButton_{{story.id}}">
+        <li>
+            <a href="{% url 'stories:story_detail' story.id %}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white
+                data-dropdown-toggle='dropdown_{{story.id}}'" >
+                Read this story</a>
+        </li>
+        <li>
+            <a href="{% url 'stories:edit_story' story.id %}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                Edit this story</a>
+        </li>
+        <li>
+            {% if story.published %}
+                <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                hx-post="{% url 'stories:unpublish_story' story.id %}"
+                hx-target="#story_{{story.id}}"
+                hx-swap="outerHTML"
+                hx-trigger="click">
+                Unpublish this story</a>
+            {% else %}
+                <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                hx-post="{% url 'stories:publish_story' story.id %}"
+                hx-target="#story_{{story.id}}"
+                hx-swap="outerHTML"
+                hx-trigger="click">
+                Publish this story</a>
+            {% endif %}
+        </li>
+        </ul>
+    </div>
+</div>
+
+{% comment %} <script>
+    // open the dropdown menu after the swap
+    document.addEventListener('htmx:afterSwap', function(event) {
+        console.log("got new after swap event at ", event.detail.target.id)
+        if (event.detail.target.id.startsWith('dropdown_')) {
+            const dropdown = document.getElementById(event.detail.target.id);
+            dropdown.classList.remove('hidden');
+        }
+    });
+    // close the dropdown menu when clicking outside
+    document.addEventListener('click', function(event) {
+        const dropdowns = document.querySelectorAll('[data-dropdown-toggle]');
+        dropdowns.forEach(dropdown => {
+            if (!dropdown.contains(event.target)) {
+                const dropdownId = dropdown.getAttribute('data-dropdown-toggle');
+                const dropdownMenu = document.getElementById(dropdownId);
+                dropdownMenu.classList.add('hidden');
+            }
+        });
+    });
+
+</script> {% endcomment %}

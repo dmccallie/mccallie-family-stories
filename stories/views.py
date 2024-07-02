@@ -36,12 +36,12 @@ def story_list(request):
 
     # all_stories = Story.objects.all().order_by('-last_updated')
     page_number = request.GET.get('page', 1)
-    paginator = Paginator(Story.objects.all().order_by('-last_updated'), 20)
+    paginator = Paginator(Story.objects.all().order_by('-last_updated'), 6)
     page_obj = paginator.get_page(page_number)
 
     if request.htmx:
         print("got htmx request for page = ", page_number)
-        return render(request, 'stories/story_list_stories.html', {'published': None, 'unpublished': None, 'page_obj': page_obj})
+        return render(request, 'stories/story_list_all_stories.html', {'published': None, 'unpublished': None, 'page_obj': page_obj})
     
     else:
         print("got regular request for INITIAL page = ", page_number)
@@ -142,6 +142,29 @@ def story_detail(request, story_id):
     return render(request, 'stories/story_detail.html', {'story': story, 'content_html': content_html,
                             'comment_tree': comment_tree, 'form': form,
                             'next_story': next_story, 'previous_story': previous_story})
+
+def unpublish_story(request, story_id):
+    story = get_object_or_404(Story, pk=story_id)
+    story.published = False
+    story.save()
+    messages.success(request, "Story unpublished.")
+    if request.htmx:
+        print("got htmx UNPUBLISH request for story id = ", story_id)
+        return render(request, 'stories/story_list_one_story.html', {'story': story})
+
+    return redirect('stories:story_list')
+
+def publish_story(request, story_id):
+    story = get_object_or_404(Story, pk=story_id)
+    story.published = True
+    story.published_datetime = timezone.now()
+    story.save()
+    messages.success(request, "Story published.")
+    if request.htmx:
+        print("got htmx PUBLISH request for story id = ", story_id)
+        return render(request, 'stories/story_list_one_story.html', {'story': story})
+
+    return redirect('stories:story_list')
 
 def add_comment(request, story_id):
     story = get_object_or_404(Story, id=story_id)

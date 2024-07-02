@@ -6,28 +6,29 @@
 
 {% block content %}
 
-{% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-        <li{% if message.tags %} class=" text-black dark:text-white {{ message.tags }}"{% endif %}>{{ message }}</li>
-        {% endfor %}
-    </ul>
-{% endif %}
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li{% if message.tags %} class=" text-black dark:text-white {{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
 
     <h2 class="text-2xl mb-3 text-black dark:text-white">Recent Stories</h2>
     
+    <!-- this will expand to include all first page stories -->
 
-    {% include "stories/story_list_stories.html" with page_obj=page_obj %}
+    {% include "stories/story_list_all_stories.html" with page_obj=page_obj %}
 
-
+    
     <!-- Modal html for profile modal popup Using flowbite's Modal classes and JS -->
     <div id="modalEl"
         tabindex="-1"
         aria-hidden="true"
         class="fixed left-0 right-0 top-0 z-50 hidden h-[calc(100%-1rem)]
-        max-h-full w-full overflow-y-auto overflow-x-hidden p-4 md:inset-0"
-    >
-    <div class="relative max-h-full w-full max-w-2xl">
+        max-h-full w-full overflow-y-auto overflow-x-hidden p-4 md:inset-0">
+    
+      <div class="relative max-h-full w-full max-w-2xl">
         
         <div class="relative rounded-lg bg-white shadow dark:bg-gray-700">
             
@@ -88,27 +89,40 @@
             </div>
         </div>
     </div>
+
+    <!-- model placeholder for popup menu in each story card 
+        the contents get replaced by htmx call, specific to the actual card -->
+
+    <div id="modal_popup_menu_content" class="hidden">
+        This gets replaced by call to htmx get_story_menu
+    </div>
+
 </div>
+
+
+
 
 {% endblock content %}
 
 {% block scripts %}
 
 <script>
+    
     // handle profile modal popup with htmx
-
+    // triggered by afterSwap event from htmx - decide what caused it and react accordingly
     document.addEventListener("htmx:afterSwap", function(event) {
         console.log('story list page after swap with target id = ', event.detail.target.id);
+
+        // fucking magic - must re-init all flowbite after any HTMX changes!!!
+        initFlowbite();
         
         if (event.detail.target.id === "view_profile_modal_content") {
             modal.show();
             console.log('ready to show modal');
-        }
+        } 
     });
 
     // testing flowbite modal control with javascript
-
-    // import { Modal } from 'flowbite';
 
     // set the modal menu element
     const $targetEl = document.getElementById('modalEl');
