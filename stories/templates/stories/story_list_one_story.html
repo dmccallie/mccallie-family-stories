@@ -54,7 +54,7 @@
                     {% endif %}
                 </div>
 
-                <div>
+                <div class="">
                     <span htmx="get"
                         hx-trigger="click"
                         hx-get="{% url 'profiles:profile_detail' story.user.id %}"
@@ -62,7 +62,7 @@
                         hx-swap="innerHTML" 
                         class="cursor-pointer text-lg font-medium text-gray-900 dark:text-white">
                             {{ story.user }}
-                </span>
+                    </span>
 
                     {% if story.published %}
                     <p class="text-sm text-gray-500 dark:text-gray-400">
@@ -74,12 +74,7 @@
                     {% endif %}
 
                     <button id="dropdownDefaultButton_{{story.id}}" data-dropdown-toggle="dropdown_{{story.id}}"
-                        class="inline-block rounded-b border border-gray-200 p-1 dark:border-gray-600"
-                        {% comment %} hx-post="{% url 'stories:get_story_menu' story.id %}"
-                        hx-target="#modal_popup_menu_content"
-                        hx-swap="outerHTML"
-                        hx-trigger="click" {% endcomment %}
-                        >
+                        class="inline-block rounded-b border border-gray-200 p-1 dark:border-gray-600">
                         <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path></svg>
                     </button>
                 </div>

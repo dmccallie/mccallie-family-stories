@@ -11,7 +11,8 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
 from django.utils import timezone
 from django.core.files.storage import default_storage
-from django.core.paginator import Paginator
+from django.db import connection
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 # Create your views here.
 def story_test(request, id):
@@ -236,3 +237,28 @@ def markdown_to_html(request):
 
 def test_ace_editor(request):
     return render(request, 'stories/test_ace_editor.html')
+
+def search(request):
+    query = request.GET.get('q')
+    results = []
+    if query:
+        with connection.cursor() as cursor:
+            cursor.execute('''
+                SELECT rowid, title, snippet(stories_story_fts, -1, '<b>', '</b>', '...', 10), 
+                    bm25(stories_story_fts, 10.0, 1.0) as rank
+                FROM stories_story_fts
+                WHERE stories_story_fts MATCH %s
+                ORDER BY rank;
+            ''', [query])
+            results = cursor.fetchall()
+    
+    # Paginate the results
+    paginator = Paginator(results, 5)  # Show 5 results per page
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    print("got search results: ", page_obj)
+
+    return render(request, 'stories/search_results.html', {
+        'results': page_obj,
+        'query': query,
+    })

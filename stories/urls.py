@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import story_test, story_list, add_story, \
     story_detail, add_comment, upload_image, markdown_to_html,\
-    test_ace_editor, unpublish_story, publish_story
+    test_ace_editor, unpublish_story, publish_story, search
 
 urlpatterns = [
     path('story_test/<int:id>/', story_test, name='story_test'),
@@ -15,4 +15,5 @@ urlpatterns = [
     path('upload_image/', upload_image, name='upload_image'),
     path('markdown_to_html/', markdown_to_html, name='markdown_to_html'),
     path('test_ace_editor/', test_ace_editor, name='test_ace_editor'),
+    path('search/', search, name='search')
 ]
