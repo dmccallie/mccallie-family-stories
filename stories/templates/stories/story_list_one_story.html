@@ -23,7 +23,7 @@
         </a>
         
         <!-- wrap title, summary, and author details -->
-        <div class="p-5">
+        <div class="p-2">
             <a href="{% url 'stories:story_detail' story.id %}">
                 <h5 class="mb-2 text-lg font-bold tracking-tight text-gray-900 dark:text-white">
                     {{story.title}}</h5>
@@ -31,10 +31,19 @@
             <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">
                 {{ story.summary|truncatewords:10 }}</p>
                 
-            <hr class="h-px my-4 bg-gray-600 border-0 dark:bg-gray-400">
-            
+            <hr class="h-px my-2 bg-gray-600 border-0 dark:bg-gray-400">
+            {% if story.tags.all %}
+                {% for tag in story.tags.all %}
+                    <a href="{% url 'stories:story_list' %}?tags={{tag.name}}"
+                        class="inline-block px-1 py-1 mr-1 text-xs font-semibold text-gray-700 bg-gray-200 rounded-full dark:bg-gray-600 dark:text-gray-200">
+                        {{ tag.name }}
+                    </a>
+                {% endfor %}
+                <hr class="h-px my-2 bg-gray-600 border-0 dark:bg-gray-400">
+            {% endif %}
+
             <!-- author details inline flex plus htmx trigger to show profile modal popup -->
-            <div class="inline-flex items-center mr-3 text-sm text-gray-900 dark:text-white">
+            <div class="w-full inline-flex items-center justify-between text-sm text-gray-900 dark:text-white">
 
                 <!-- trigger htmx profile only over the image -->
                 <div 
@@ -73,17 +82,19 @@
                         Story is UNPUBLISHED</p>
                     {% endif %}
 
-                    <button id="dropdownDefaultButton_{{story.id}}" data-dropdown-toggle="dropdown_{{story.id}}"
-                        class="inline-block rounded-b border border-gray-200 p-1 dark:border-gray-600">
-                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path></svg>
-                    </button>
+
                 </div>
+                <button id="dropdownDefaultButton_{{story.id}}" data-dropdown-toggle="dropdown_{{story.id}}"
+                class="inline-block rounded-b border border-gray-200 p-1 dark:border-gray-600">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path></svg>
+            </button>
             </div>
         </div>
     </div>
     <!-- magic infinite scroll, learned from https://www.photondesigner.com/articles/infinite-scroll-htmx-django -->
     {% if page_obj.has_next and forloop.last %}
-        <div class="" hx-get="{% url 'stories:story_list' %}?page={{ page_obj.next_page_number }}"
+        <div class="" hx-get="{% url 'stories:story_list' %}?page={{ page_obj.next_page_number }}
+            {% if request.GET.tags %}&tags={{ request.GET.tags }}{% endif %}"
                 hx-swap="beforeend" hx-target="#stories" hx-select=".a_story"
                 hx-trigger="revealed">
         </div>

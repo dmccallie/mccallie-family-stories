@@ -1,7 +1,5 @@
 # stories/management/commands/index_fts.py
 
-# stories/management/commands/index_fts.py
-
 from django.core.management.base import BaseCommand
 from django.db import connection
 from stories.models import Story

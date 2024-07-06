@@ -37,17 +37,32 @@ def story_list(request):
 
     # all_stories = Story.objects.all().order_by('-last_updated')
     page_number = request.GET.get('page', 1)
-    paginator = Paginator(Story.objects.all().order_by('-last_updated'), 6)
+    tags = request.GET.get('tags', None)
+    print("request got tags: ", tags)
+    
+    # todo - support tags that have embedded commas??
+    tags_list = tags.split(',') if tags else None
+    if tags_list:
+        print("got tags list: ", tags_list)
+        paginator = Paginator(Story.objects.filter(tags__name__in=tags_list).order_by('-last_updated'),6)
+        print("tagged paginator count: ", paginator.count)
+    else:
+        paginator = Paginator(Story.objects.all().order_by('-last_updated'), 6)
+
     page_obj = paginator.get_page(page_number)
 
     if request.htmx:
         print("got htmx request for page = ", page_number)
-        return render(request, 'stories/story_list_all_stories.html', {'published': None, 'unpublished': None, 'page_obj': page_obj})
+        return render(request, 'stories/story_list_all_stories.html',
+                       {'tags':tags, 'page_obj': page_obj})
     
     else:
         print("got regular request for INITIAL page = ", page_number)
+        print("regular request got tags: ", tags)
+        print("regular request has total pages, count: ", 
+                paginator.num_pages, paginator.count) 
         return render(request, 'stories/story_list.html', 
-                  {'published': None, 'unpublished': None, 'page_obj': page_obj}) # test just ret 1 page
+                  {'tags':tags, 'page_obj': page_obj}) # test just ret 1 page
 
 
 @login_required

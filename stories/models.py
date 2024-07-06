@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from taggit.managers import TaggableManager
 
 # a silly demo of how to do custom validations.
 # displays the error message in the form if the word 'good' is not in the summary
@@ -36,6 +37,10 @@ class Story(models.Model):
     published = models.BooleanField(default=False)
     published_datetime = models.DateTimeField(null=True, blank=True)
     last_updated = models.DateTimeField(auto_now=True)
+
+    # tags
+    tags = TaggableManager()
+
 
     def __str__(self):
         return self.title
