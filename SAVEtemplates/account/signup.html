@@ -1,0 +1,89 @@
+<!-- DPM override of account/signup -->
+{% extends "_base.html" %}
+{% load allauth i18n %}
+
+
+{% block content %}
+    
+    {% if not SOCIALACCOUNT_ONLY %}
+    <div class="flex flex-col items-center justify-center">
+            
+        <h2 class="mb-3 text-2xl text-gray-900 dark:text-white ">Register Your Account</h2>
+        <h4 class="mb-3 text-lg text-gray-900 dark:text-white">Already registered? Then please
+            <a class="font-medium text-blue-600 underline dark:text-blue-500 hover:no-underline"
+               href="{{ login_url }}">sign in</a>.
+        </h4>
+
+        <form class="max-w-lg w-full p-6" method="post" action="{{ signup_url }}">
+            {% csrf_token %}
+
+            {% comment %} <div class="mb-5">
+                {{ form.username.errors }}
+                
+                <label class="block fb-label"
+                    for="{{form.username.id_for_label}}">{{form.username.label}}:</label>
+                
+                <input type="text" id="{{form.username.id_for_label}}" name="{{form.username.html_name}}" 
+                    class="{% if form.username.errors %} fb-input-error {% else %}fb-input{% endif %}"
+                    placeholder=""
+                    autocomplete="{{form.username.html_name}}"
+                    value="{{form.username.value|default_if_none:'' }}"
+                    minlength="1" maxlength="150" required >
+            </div>
+            
+            <div class="mb-5">
+                {{ form.email.errors }}
+                
+                <label for="{{form.email.id_for_label}}"
+                    class="fb-label">{{form.email.label}}:</label>
+
+                <input type="email" id="{{form.email.id_for_label}}" name="{{form.email.html_name}}"
+                    class="{% if form.email.errors %} fb-input-error {% else %}fb-input{% endif %}"
+                    placeholder=""
+                    autocomplete="{{form.email.html_name}}"
+                    maxlength="320" 
+                    value="{{form.email.value|default_if_none:''}}">
+            </div>
+
+            <div class="mb-3">
+                {{ form.password1.errors }}
+
+                <label for="{{form.password1.id_for_label}}"
+                    class="fb-label">{{form.password1.label}}:</label>
+
+                <input type="password" id="{{form.password1.id_for_label}}" name="{{form.password1.html_name}}"
+                    class="{% if form.password1.errors %} fb-input-error {% else %} fb-input {% endif %}"
+                    placeholder=""
+                    autocomplete="new-password" required>
+            </div>
+
+            <div class="mb-5 text-base  text-gray-900 dark:text-white " 
+                id="{{form.password1.id_for_label}}_helptext">
+                {{form.password1.help_text}}
+            </div>
+            
+            <div class="mb-5">
+                {{ form.password2.errors }}
+                
+                <label for="{{form.password2.id_for_label}}"
+                class="block fb-label">{{form.password2.label}}:</label>
+
+                <input type="password" id="{{form.password2.id_for_label}}" name="{{form.password2.html_name}}"
+                class="{% if form.password2.errors %} fb-input-error {% else %}fb-input{% endif %}"
+                placeholder=""
+                autocomplete="new-password" required>
+
+            </div> {% endcomment %}
+
+            {% include "form_all_fields_fb.html" with form=form %}
+
+            <button class="fb-btn-primary" type="submit">Register</button>
+        </form>
+
+    </div>
+    <hr>
+    {% endif %}
+    {% if SOCIALACCOUNT_ENABLED %}
+        {% include "socialaccount/snippets/login.html" with page_layout="entrance" %}
+    {% endif %}
+{% endblock content %}

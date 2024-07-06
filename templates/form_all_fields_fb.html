@@ -1,0 +1,53 @@
+<!-- includable template to render all fields in a form, using flowbite classes 
+    at the moment, the classes are defined using @apply in the static/src/input.css file 
+    Don't forget to have tailwindcss preprocess forms and use collectstatic into /staticfiles -->
+
+{% if form.non_field_errors %}
+    <div class="mb-4">
+        {% for error in form.non_field_errors %}
+            <p class="text-red-500 text-xs italic">{{ error }}</p>
+        {% endfor %}
+    </div>
+{% endif %}
+
+{% for field in form %}
+    <div class="mb-4">
+        {% if field.is_hidden %}
+            {{ field }}
+        
+        {% elif field.field.widget.input_type == 'checkbox' %}
+            <input
+                type="checkbox"
+                id="{{ field.id_for_label }}"
+                name="{{ field.name }}"
+                class="fb-checkbox"
+                {% if field.value %} checked {% endif %}
+                {% for attr, value in field.field.widget.attrs.items %} {{ attr }}="{{ value }}" {% endfor %}
+            />
+            <label for="{{ field.id_for_label }}" class="fb-label">{{ field.label }}</label>
+            {% if field.help_text %}
+                <div class="mt-3 mb-5 text-sm  text-gray-900 dark:text-white italic">{{ field.help_text }}</div>    
+            {% endif %}
+        
+        {% else %}
+
+            <label class="block fb-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            <input
+                id="{{ field.id_for_label }}"
+                type="{{ field.field.widget.input_type }}"
+                name="{{ field.name }}"
+                value="{{ field.value|default_if_none:'' }}"
+                class="{% if field.errors %} fb-input-error {% else %} fb-input {% endif %}"
+                {% if field.field.required %} required {% endif %}
+                {% for attr, value in field.field.widget.attrs.items %} {{ attr }}="{{ value }}" {% endfor %}
+            />
+            {% for error in field.errors %}
+                <p class="text-red-500 text-xs italic">{{ error }}</p>
+            {% endfor %}
+            {% if field.help_text %}
+                <div class="mt-3 mb-5 text-sm  text-gray-900 dark:text-white italic">{{ field.help_text }}</div>    
+            {% endif %}
+        
+        {% endif %}
+    </div>
+{% endfor %}

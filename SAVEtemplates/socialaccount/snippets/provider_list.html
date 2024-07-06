@@ -1,0 +1,31 @@
+<!-- dpm override of allauth socialaccounts/snippet/provider_list template -->
+
+{% load allauth socialaccount %}
+{% get_providers as socialaccount_providers %}
+{% if socialaccount_providers %}
+    {% element provider_list %}
+        {% for provider in socialaccount_providers %}
+            {% if provider.id == "openid" %}
+                {% for brand in provider.get_brands %}
+                    {% provider_login_url provider openid=brand.openid_url process=process as href %}
+                    {% element provider name=brand.name provider_id=provider.id href=href %}
+                    {% endelement %}
+                {% endfor %}
+            {% endif %}
+            {% provider_login_url provider process=process scope=scope auth_params=auth_params as href %}
+            {% element provider name=provider.name provider_id=provider.id href=href %}
+            {% endelement %}
+        {% endfor %}
+    {% endelement %}
+{% endif %}
+
+{% for provider in socialaccount_providers %}
+    <p>a provider_id : {{ provider.id }}</p>
+    <p>a provider_name : {{ provider.name }}</p>
+    <p>a provider_get_brands : {{ provider.get_brands }}</p>
+    <p>a provider login url: {% provider_login_url provider %}</p>
+    {% for brand in provider.get_brands %}
+        <p>brand name : {{ brand.name }}</p>
+        <p>brand openid_url href : {{ brand.openid_url }}</p>
+    {% endfor %}
+{% endfor %}

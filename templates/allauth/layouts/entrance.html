@@ -1,0 +1,27 @@
+{% extends "allauth/layouts/base.html" %}
+{% load i18n allauth %}
+{% block body %}
+    {% comment %} <div class="flex-grow-1 bg-body-secondary d-flex flex-column justify-content-center"> {% endcomment %}
+    <div class="flex flex-col items-center justify-center container">
+        {% comment %} <div class="flex-grow-0 flex-shrink-0 container"> {% endcomment %}
+            {% comment %} <div class="row justify-content-md-center"> {% endcomment %}
+                {% comment %} <div class="col col-lg-4"> {% endcomment %}
+                    {% if messages %}
+                        {% for message in messages %}
+                            {% element alert level=message.tags %}
+                                {% slot message %}
+                                    {{ message }}
+                                {% endslot %}
+                            {% endelement %}
+                        {% endfor %}
+                    {% endif %}
+                    <div class="bg-green-300 shadow rounded-4">
+                        <div class="p-5">
+                            {% block content %}{% endblock %}
+                        </div>
+                    </div>
+                {% comment %} </div> {% endcomment %}
+            {% comment %} </div> {% endcomment %}
+        {% comment %} </div> {% endcomment %}
+    </div>
+{% endblock %}

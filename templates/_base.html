@@ -20,6 +20,12 @@
     <link rel="stylesheet" href="{% static 'src/output.css' %}">
     <link rel="stylesheet" href="{% static 'src/markdown-content.css' %}">
 
+    <!-- temporarily added bootstrap for help during allauth integration -->
+    {% comment %} <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+    crossorigin="anonymous"> {% endcomment %}
+
     <!-- ace editor -->
     <!-- replace this with local copy ?? -->
     <link href="https://cdn.jsdelivr.net/npm/ace-builds@1.34.2/css/ace.min.css" rel="stylesheet">
@@ -38,13 +44,24 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">    
 
+    <!-- this overrides the django style for form error messages -->
+    <style>
+      .errorlist {
+        color: red;
+        font-weight: 400;
+        font-size: 16px;
+        line-height: 1.5rem;
+        margin: 12px;
+      }
+    </style>
+
     {% block mycss %} 
     {% endblock mycss %}
 
 </head>
 
   <!-- dpm added m-auto to keep it centered after hitting 4xl? -->
-  <body class=" max-w-4xl m-auto bg-blue-100  dark:bg-gray-900" antialiased 
+  <body class="min-h-screen max-w-6xl m-auto bg-blue-100  dark:bg-gray-900" antialiased 
     hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
     
     <!-- Add this -->
@@ -88,9 +105,18 @@
                    Create New Story</a>
               </li>
 
+              <li>
+                <a href="{%  url 'stories:search' %}" class="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100
+                 hover:bg-gray-50 md:hover:bg-transparent md:border-0
+                 md:hover:text-green-700 md:p-0 dark:text-white md:dark:hover:text-white
+                  dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent
+                   dark:border-gray-700">
+                   Search</a>
+              </li>
+
               {% if user.is_authenticated %}
                 <li>
-                  <form method="post" action="{% url 'logout' %}">
+                  <form method="post" action="{% url 'account_logout' %}">
                     {% csrf_token %}
                     <button type="submit"
                     class="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50
@@ -102,7 +128,7 @@
                 </li>
               {% else %}
                 <li>
-                  <a href="{% url 'login' %}" class="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50
+                  <a href="{% url 'account_login' %}" class="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50
                     md:hover:bg-transparent md:border-0 md:hover:text-green-700 md:p-0 dark:text-white
                       md:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white 
                       md:dark:hover:bg-transparent dark:border-gray-700">

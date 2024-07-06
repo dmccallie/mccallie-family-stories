@@ -113,8 +113,8 @@
         </header>
         <p class="lead">{{ story.summary}} </p>
         
-        {% if story.image  %}
-        <figure class="story-image"><img src="{{ story.image.url }}" alt="{{ story.title }}">
+        {% if story.get_image_url  %}
+        <figure class="story-image"><img src="{{ story.get_image_url }}" alt="{{ story.title }}">
             <figcaption>{{ story.image_caption }}</figcaption>
         </figure>
         {% endif %}

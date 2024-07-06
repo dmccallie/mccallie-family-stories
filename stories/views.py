@@ -11,6 +11,8 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
 from django.utils import timezone
 from django.core.files.storage import default_storage
+from django.db import connection
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 # Create your views here.
 def story_test(request, id):
@@ -33,10 +35,19 @@ def story_list(request):
     # and get unpublished stories, order them by the last updated date
     # unpublished = Story.objects.filter(published=False).order_by('-last_updated')
 
-    all_stories = Story.objects.all().order_by('-last_updated')
+    # all_stories = Story.objects.all().order_by('-last_updated')
+    page_number = request.GET.get('page', 1)
+    paginator = Paginator(Story.objects.all().order_by('-last_updated'), 6)
+    page_obj = paginator.get_page(page_number)
+
+    if request.htmx:
+        print("got htmx request for page = ", page_number)
+        return render(request, 'stories/story_list_all_stories.html', {'published': None, 'unpublished': None, 'page_obj': page_obj})
     
-    return render(request, 'stories/story_list.html', 
-                  {'published': None, 'unpublished': None, 'all_stories': all_stories})
+    else:
+        print("got regular request for INITIAL page = ", page_number)
+        return render(request, 'stories/story_list.html', 
+                  {'published': None, 'unpublished': None, 'page_obj': page_obj}) # test just ret 1 page
 
 
 @login_required
@@ -110,6 +121,7 @@ def add_story(request, story_id=None):
 
     return render(request, 'stories/add_story.html', {'form': form })
 
+@login_required
 def story_detail(request, story_id):
     story = get_object_or_404(Story, pk=story_id)
     next_story = story.get_next_story()
@@ -133,6 +145,32 @@ def story_detail(request, story_id):
                             'comment_tree': comment_tree, 'form': form,
                             'next_story': next_story, 'previous_story': previous_story})
 
+@login_required
+def unpublish_story(request, story_id):
+    story = get_object_or_404(Story, pk=story_id)
+    story.published = False
+    story.save()
+    messages.success(request, "Story unpublished.")
+    if request.htmx:
+        print("got htmx UNPUBLISH request for story id = ", story_id)
+        return render(request, 'stories/story_list_one_story.html', {'story': story})
+
+    return redirect('stories:story_list')
+
+@login_required
+def publish_story(request, story_id):
+    story = get_object_or_404(Story, pk=story_id)
+    story.published = True
+    story.published_datetime = timezone.now()
+    story.save()
+    messages.success(request, "Story published.")
+    if request.htmx:
+        print("got htmx PUBLISH request for story id = ", story_id)
+        return render(request, 'stories/story_list_one_story.html', {'story': story})
+
+    return redirect('stories:story_list')
+
+@login_required
 def add_comment(request, story_id):
     story = get_object_or_404(Story, id=story_id)
     if request.method == 'POST':
@@ -163,6 +201,7 @@ def add_comment(request, story_id):
     
     return HttpResponseBadRequest("Invalid request method")
 
+@login_required
 def upload_image(request):
     print("got image upload POST request", request.POST, request.FILES)
     # if request.method == 'POST' and request.FILES['markdown_image']:
@@ -203,3 +242,114 @@ def markdown_to_html(request):
 
 def test_ace_editor(request):
     return render(request, 'stories/test_ace_editor.html')
+
+@login_required
+def search(request):
+    query = request.GET.get('q')
+    results = []
+    if query:
+        with connection.cursor() as cursor:
+            cursor.execute('''
+                SELECT rowid, highlight(stories_story_fts, 0, '<b>', '</b>') as title,
+                           highlight(stories_story_fts, 1, '<b>', '</b>') as content,
+                    bm25(stories_story_fts, 10.0, 1.0) as rank
+                FROM stories_story_fts
+                WHERE stories_story_fts MATCH %s
+                ORDER BY rank;
+            ''', [query])
+            results = cursor.fetchall()
+
+    # Paginate the results
+    paginator = Paginator(results, 8) # results per page
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
+    # post process the results to extract snippets
+    # results = (rowid, title, content, rank)
+    # can't modify tuples, so create a new list of modified results
+    # add username to each result
+    # TODO cache the author name?
+    modified_results = []
+    for result in page_obj.object_list:
+        # get author name for a story
+        try:
+            story = Story.objects.get(pk=int(result[0])) # rowid = story.id
+            if story.user:
+                author_name = story.user.username
+            else:
+                author_name = "Author unknown"
+        except:
+            author_name = "Author unknown"
+
+        modified_result = (result[0], result[1], create_snippet_text(result[2], 4), result[3], author_name)
+        modified_results.append(modified_result)
+
+    # Replace the object_list in the first_page with the modified results
+    page_obj.object_list = modified_results
+
+    return render(request, 'stories/search_results.html', {
+        'results': page_obj,
+        'query': query,
+    })
+
+                # SELECT rowid, title, snippet(stories_story_fts, -1, '<b>', '</b>', '...', 10), 
+                #     bm25(stories_story_fts, 10.0, 1.0) as rank
+                # FROM stories_story_fts
+                # WHERE stories_story_fts MATCH %s
+                # ORDER BY rank;
+
+
+import re
+
+# crude snippet extraction created with copilot
+# needs to do extraction of n words before and after the highlighted phrase better
+#  such as stopped at a period or terminator
+
+def extract_snippets(text, N):
+    # Regular expression to find all highlighted phrases between <b> tags
+    highlighted_phrases = re.finditer(r'<b>(.*?)</b>', text)
+    
+    # merge matches together that are close together
+    # if the end of match 1 is within M letters of the start of match 2, merge them
+    match_spans = [matches.span() for matches in highlighted_phrases]
+    
+    # print("match_spans: ", match_spans)
+    merged_match_spans = []
+    M = 30 # characters allowed between merged matches
+    cur = match_spans.pop(0) if match_spans else None 
+    next = match_spans.pop(0) if match_spans else None
+
+    if cur is None:
+        return []
+    
+    while cur is not None and next is not None:
+        if next[0] - cur[1] < M:
+            cur = (cur[0], next[1])
+            next = match_spans.pop(0) if match_spans else None
+        else:
+            merged_match_spans.append(cur)
+            cur = next
+            next = match_spans.pop(0) if match_spans else None
+    
+    merged_match_spans.append(cur)
+
+    print("merged_match_spans: ", merged_match_spans)
+
+    snippets = []
+    for span in merged_match_spans:
+        start, end = span
+
+        # Extract N words before and after the highlighted phrase
+        pre_text = text[:start].split(' ')[-N:]
+        post_text = text[end:].split(' ')[:N]
+        
+        # construct the snippet
+        snippets.append(' '.join(pre_text) + ' ' +  text[start:end] + ' ' + (' '.join(post_text)).strip())
+    
+    return snippets
+
+def create_snippet_text(text, N):
+    snippets = extract_snippets(text, N)
+    if not snippets or len(snippets) == 0:
+        return ''
+    return '... | ...'.join(snippets)
