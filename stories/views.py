@@ -131,6 +131,7 @@ def add_story(request, story_id=None):
                     msg = "Your story has been published!"
             
             story.save()
+            form.save_m2m() # save the many-to-many tag relationships
             messages.success(request, msg)
             return redirect('stories:story_list')
 

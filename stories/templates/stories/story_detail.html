@@ -132,7 +132,20 @@
             <span id="toggle_0" class="text-sm">SHOW MODAL</span>
         </button> {% endcomment %}
 
-        <h3>Comments</h3>
+        <div class="mb-4 border rounded bg-gray-200 dark:bg-gray-600">
+        {% if story.tags.all %}
+            {% for tag in story.tags.all %}
+                <a href="{% url 'stories:story_list' %}?tags={{tag.name}}"
+                    class="inline-block px-2 py-2 mr-2 text-base font-semibold text-gray-700 bg-gray-200
+                         rounded dark:bg-gray-600 dark:text-gray-200 no-underline">
+                    {{ tag.name }}
+                </a>
+            {% endfor %}
+        {% endif %}
+        </div>
+
+
+        <h3>Continue the conversation with your comments</h3>
 
         <div class="foo" id="comments-section-header">
 

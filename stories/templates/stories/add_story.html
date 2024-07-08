@@ -331,6 +331,30 @@
 
     </div> <!-- wrapper around both tabs and children -->
 
+    <!-- Render tags as checkboxes manually -->
+    <div class="mb-4 p-2 border rounded border-gray-300 dark:border-gray-600">
+        <label class="block text-gray-900 dark:text-white">Tag your story:</label>
+
+        <div class="flex flex-wrap">
+        {% for tag in form.tags.field.choices %}
+            <div class="flex items-center mr-6 mb-2">
+                <input type="checkbox" class="mr-1 fb-checkbox" id="id_tag_{{ forloop.counter0 }}" name="tags" 
+                    value="{{ tag.0 }}" {% if tag.0 in form.tags.value %}checked{% endif %}>
+                <label class=" text-gray-900 dark:text-white" for="id_tag_{{ forloop.counter0 }}">{{ tag.1 }}</label>
+            </div>
+        {% endfor %}
+        </div>
+
+        {% if form.tags.errors %}
+            <div class="text-red-500 mt-2">
+                {% for error in form.tags.errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    
+
     <div class="flex flex-row gap-4 justify-left items-center ">
         
         <button class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4
