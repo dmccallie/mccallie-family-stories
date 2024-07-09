@@ -114,6 +114,7 @@ TEMPLATES = [
                 
                  # `allauth` needs this from django
                 'django.template.context_processors.request',
+                'config.context_processors.base_context',  # Custom context for _base.html
             ],
         },
     },

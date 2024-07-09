@@ -65,6 +65,7 @@
     hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
     
     <!-- Add this -->
+
     <nav class="bg-green-50 border-gray-200 px-2 sm:px-4 py-2.5 rounded dark:bg-gray-800">
         <div class="container flex flex-wrap items-center justify-between mx-auto">
           <!-- Logo -->
@@ -76,28 +77,77 @@
             <span class="self-center text-xl font-semibold whitespace-nowrap
              dark:text-blue-300">McCallie Family Stories</span>
           </a>
-          <button data-collapse-toggle="mobile-menu" type="button" class="inline-flex items-center p-2 ml-3 text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="mobile-menu" aria-expanded="false">
+
+          <!-- button triggers main menu for mobile small screen -->
+          <button data-collapse-toggle="mobile-menu" type="button" class="inline-flex items-center p-2 ml-3 text-sm text-gray-500
+           rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200
+            dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="mobile-menu" aria-expanded="false">
             <span class="sr-only">Open main menu</span>
             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path></svg>
             <svg class="hidden w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
           </button>
+          
           <div class="hidden w-full md:block md:w-auto" id="mobile-menu">
             <ul class="flex flex-col mt-4 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium">
-              {% comment %} <li>
-                <a href="{% url 'home:home'  %}" class="block py-2 pl-3 pr-4 text-white bg-green-700 rounded md:bg-transparent
-                   md:text-green-700 md:p-0 dark:text-white" aria-current="page">
-                   Home</a>
-              </li> {% endcomment %}
-
               <li>
-                <a href="{% url 'stories:story_list' %}" class="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50
-                 md:hover:bg-transparent md:border-0 md:hover:text-green-700 md:p-0 dark:text-white
-                  md:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent
-                   dark:border-gray-700">
-                   Stories</a>
+                <button id="mega-menu-dropdown-button" data-dropdown-toggle="mega-menu-dropdown" class="flex items-center justify-between
+                 py-2 px-3 font-medium text-gray-900 border-b border-gray-100 md:w-auto hover:bg-gray-50 md:hover:bg-transparent
+                 md:border-0 md:hover:text-blue-600 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700
+                  dark:hover:text-blue-500 md:dark:hover:bg-transparent dark:border-gray-700">
+                    Read Stories
+                    <svg class="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+                    </svg>
+                </button>
+
+                <!-- the hidden menu content for Read Stories expansion -->
+                <div id="mega-menu-dropdown" class="absolute z-10 grid hidden grid-cols-1 text-sm bg-white border
+                   border-gray-100 rounded-lg shadow-md dark:border-gray-700 md:grid-cols-1 dark:bg-gray-700">
+                  
+                   <div class="p-4 text-gray-900 md:pb-4 dark:text-white">
+                      <ul class="flex justify-around space-x-4 pb-2" aria-labelledby="mega-menu-dropdown-button">
+                          <li>
+                            <a href="{% url 'stories:story_list' %}" class="text-lg block py-2 pl-3 pr-4 text-gray-700 border-b 
+                            border-gray-100 hover:bg-gray-50 md:hover:bg-transparent md:border-0 md:hover:text-green-700 md:p-0 dark:text-white
+                             dark:hover:bg-gray-700 dark:hover:text-green-500 md:dark:hover:bg-transparent
+                              dark:border-gray-700">
+                              All Stories</a>           
+                          </li>
+                          <li>
+                            <a href="{% url 'stories:story_list' %}" class="text-lg block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50
+                            md:hover:bg-transparent md:border-0 md:hover:text-green-700 md:p-0 dark:text-white
+                              dark:hover:bg-gray-700  dark:hover:text-green-500 md:dark:hover:bg-transparent
+                              dark:border-gray-700">
+                              Just My Stories</a>           
+                          </li>
+                      </ul>
+
+                      <hr class="h-[2px] my-2 bg-gray-600 border-0 dark:bg-gray-400">
+                      
+                      <div class="p-4 text-center">
+                        <label class="mb-3 text-base block text-gray-900 dark:text-white">Select Stories by Tag:</label>
+                        <form id="tags-form" action="{% url 'stories:story_list' %}" method="get">
+                          <div class="flex flex-wrap justify-center max-w-72">
+                            <!-- standard_tags created in config.context_processor.py -->
+                            {% for tag in standard_tags %} 
+                            <div class="flex items-center mr-6 mb-2">
+                              <input type="checkbox" class="w-4 h-4 border border-gray-500 rounded bg-gray-300 focus:ring-2
+                                marker:focus:ring-blue-300 dark:bg-gray-400 dark:border-gray-600 dark:focus:ring-blue-600
+                                dark:ring-offset-gray-800"
+                               name="tags" value="{{ tag }}" id="tag_{{ forloop.counter0 }}">
+                              <label class="p-1 text-base text-gray-900 dark:text-white" for="tag_{{ forloop.counter0 }}">{{ tag }}</label>
+                            </div>
+                            {% endfor %}
+                          </div>  
+                          <button type="submit" class="text-lg text-gray-700 border-b border-gray-100 hover:bg-gray-50
+                            md:hover:bg-transparent md:border-0 md:hover:text-green-700 md:p-0 dark:text-white
+                             dark:hover:bg-gray-700 dark:hover:text-green-500 md:dark:hover:bg-transparent
+                              dark:border-gray-700">Show Selected Stories</button>
+                        </form>
+                  </div>
               </li>
               <li>
-                <a href="{%  url 'stories:add_story' %}" class="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100
+                <a href="{%  url 'stories:add_story' %}" class="block py-2 pl-3 pr-4 font-medium text-gray-900 border-b border-gray-100
                  hover:bg-gray-50 md:hover:bg-transparent md:border-0
                  md:hover:text-green-700 md:p-0 dark:text-white md:dark:hover:text-white
                   dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent
@@ -105,8 +155,9 @@
                    Create New Story</a>
               </li>
 
+              <!-- search menu -->
               <li>
-                <a href="{%  url 'stories:search' %}" class="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100
+                <a href="{%  url 'stories:search' %}" class="block py-2 pl-3 pr-4 font-medium text-gray-900 border-b border-gray-100
                  hover:bg-gray-50 md:hover:bg-transparent md:border-0
                  md:hover:text-green-700 md:p-0 dark:text-white md:dark:hover:text-white
                   dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent
@@ -114,12 +165,13 @@
                    Search</a>
               </li>
 
+              <!-- login logout menu -->
               {% if user.is_authenticated %}
                 <li>
                   <form method="post" action="{% url 'account_logout' %}">
                     {% csrf_token %}
                     <button type="submit"
-                    class="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50
+                    class="block py-2 pl-3 pr-4 font-medium text-gray-900 border-b border-gray-100 hover:bg-gray-50
                       md:hover:bg-transparent md:border-0 md:hover:text-green-700 md:p-0 dark:text-white
                         md:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white 
                         md:dark:hover:bg-transparent dark:border-gray-700"
@@ -128,7 +180,7 @@
                 </li>
               {% else %}
                 <li>
-                  <a href="{% url 'account_login' %}" class="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50
+                  <a href="{% url 'account_login' %}" class="block py-2 pl-3 pr-4 font-medium text-gray-900 border-b border-gray-100 hover:bg-gray-50
                     md:hover:bg-transparent md:border-0 md:hover:text-green-700 md:p-0 dark:text-white
                       md:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white 
                       md:dark:hover:bg-transparent dark:border-gray-700">
@@ -136,10 +188,10 @@
                 </li>
               {% endif %}
 
-              <!-- todo is allowing the hello to show profile good enough? -->
+              <!-- user and profile menu -->
               {% if request.user %}
               <li>
-                <a href="{% url 'profiles:update_profile' %}" class="block py-2 pl-3 pr-4 text-gray-700 hover:bg-gray-50
+                <a href="{% url 'profiles:update_profile' %}" class="block py-2 pl-3 pr-4 font-medium text-gray-900 hover:bg-gray-50
                  md:hover:bg-transparent md:border-0 md:hover:text-green-700 md:p-0
                   dark:text-white md:dark:hover:text-white dark:hover:bg-gray-700
                    dark:hover:text-white md:dark:hover:bg-transparent">
@@ -166,19 +218,11 @@
       <div class="w-full mx-auto max-w-4xl p-4 md:flex md:items-center md:justify-between">
         <span class="text-sm text-gray-500 sm:text-center dark:text-gray-400">McCallie Stories © 2024
       </span>
-      {% comment %} <ul class="flex flex-wrap items-center mt-3 text-sm font-medium text-gray-500 dark:text-gray-400 sm:mt-0 gap-10">
-          <li>
-              <a href="#" class="hover:underline me-4 md:me-6">About</a>
-          </li>
-          <li>
-              <a href="#" class="hover:underline me-4 md:me-6">Privacy Policy</a>
-          </li>
-          <li>
-              <a href="#" class="hover:underline">Contact</a>
-          </li>
-      </ul> {% endcomment %}
       </div>
-  </footer>
+    </footer>
+
+  <!-- hidden content for dropdown menu for "stories" -->
+   
   
     <!-- ace editor -->
 
