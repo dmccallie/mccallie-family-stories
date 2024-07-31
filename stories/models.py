@@ -24,10 +24,12 @@ class Story(models.Model):
     
     # this is the main story image, outside of any markdown images
     # this requires upload of the image which is then resized and saved to AWS S3
+    # note this gets deleted in the override delete below
     image = models.ImageField(upload_to='images/', blank=True, null=True)
 
     # this is a pure image url, mostly used for testing to avoid spamming S3
     # NOTE that you must use the "get_image_url" method to get the image url in templates!!
+    # no need to delete, as we assume we don't own these images
 
     image_url = models.URLField(blank=True, null=True)
 
@@ -53,8 +55,15 @@ class Story(models.Model):
             return self.image_url
         else:
             return None
+        
+    def delete(self, *args, **kwargs):
+        if self.image:
+            self.image.delete() # should remove from s3 we hope
+        super().delete(*args, **kwargs)
 
     # assuming reverse chrono list display, "next" is older, "previous" is newer
+    # TODO these are wrong if we are using tag filters!
+    # no longer used!!
     def get_next_story(self):
         next_story = Story.objects.filter(last_updated__gt=self.last_updated).order_by('last_updated').first()
         return next_story

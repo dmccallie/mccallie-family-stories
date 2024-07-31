@@ -17,7 +17,7 @@
     <ul class="mt-6">
       {% for rowid, title, content, rank, author_name in results %}
         <li class="mb-4">
-          <h2><a class="fb-link" href="{% url 'stories:story_detail' rowid %}">
+          <h2><a class="fb-link" href="{% url 'stories:story_detail' rowid %}?mode=search">
             <span class="fb-link"> {{ title|safe }} </span> </a>
             <span class="p-2 text-sm fb-text-color">Author: {{ author_name }}</span></h2>
           <p class="ml-4 mt-2 text-base fb-text-color dark:text-gray-200">{{ content|safe }}</p>

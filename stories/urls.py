@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import story_test, story_list, add_story, \
+from .views import story_test, story_list, add_story, delete_story, \
     story_detail, add_comment, upload_image, markdown_to_html,\
     test_ace_editor, unpublish_story, publish_story, search
 
@@ -9,6 +9,7 @@ urlpatterns = [
     path('add_story/', add_story, name='add_story'),
     path('unpublish_story/<int:story_id>/', unpublish_story, name='unpublish_story'),
     path('publish_story/<int:story_id>/', publish_story, name='publish_story'),
+    path('delete_story/<int:story_id>/', delete_story, name='delete_story'),
     path('edit_story/<int:story_id>/', add_story, name='edit_story'),  # edit existing story
     path('story_detail/<int:story_id>/', story_detail, name='story_detail'),  # view existing story
     path('story_detail/<int:story_id>/add_comment/', add_comment, name='add_comment'),

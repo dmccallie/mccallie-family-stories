@@ -74,7 +74,7 @@
           </a>
           
           <a href="{{ .Site.Params.homepage }}/" class="flex items-center">
-            <span class="self-center text-xl font-semibold whitespace-nowrap
+            <span class="self-center text-lg font-semibold whitespace-nowrap
              dark:text-blue-300">McCallie Family Stories</span>
           </a>
 
@@ -105,22 +105,22 @@
                    border-gray-100 rounded-lg shadow-md dark:border-gray-700 md:grid-cols-1 dark:bg-gray-700">
                   
                    <div class="p-4 text-gray-900 md:pb-4 dark:text-white">
-                      <ul class="flex justify-around space-x-4 pb-2" aria-labelledby="mega-menu-dropdown-button">
-                          <li>
-                            <a href="{% url 'stories:story_list' %}" class="text-lg block py-2 pl-3 pr-4 text-gray-700 border-b 
-                            border-gray-100 hover:bg-gray-50 md:hover:bg-transparent md:border-0 md:hover:text-green-700 md:p-0 dark:text-white
-                             dark:hover:bg-gray-700 dark:hover:text-green-500 md:dark:hover:bg-transparent
-                              dark:border-gray-700">
-                              All Stories</a>           
-                          </li>
-                          <li>
-                            <a href="{% url 'stories:story_list' %}" class="text-lg block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50
-                            md:hover:bg-transparent md:border-0 md:hover:text-green-700 md:p-0 dark:text-white
-                              dark:hover:bg-gray-700  dark:hover:text-green-500 md:dark:hover:bg-transparent
-                              dark:border-gray-700">
-                              Just My Stories</a>           
-                          </li>
-                      </ul>
+                    <ul class="flex justify-around space-x-4 pb-2" aria-labelledby="mega-menu-dropdown-button">
+                      <li>
+                          <button role="link" onclick="window.location.href='{% url 'stories:story_list' %}'"
+                                  class="text-lg block fb-btn-primary py-1.5">
+                              All Stories
+                          </button>
+                      </li>
+                      <li>
+                          <button role="link" 
+                            onclick="window.location.href=
+                              '{% url 'stories:story_list' %}{% if user.is_authenticated %}?uid={{ user.id }}{% endif %}'"
+                            class="text-lg block fb-btn-primary py-1.5">
+                              Just My Stories
+                          </button>
+                      </li>
+                  </ul>
 
                       <hr class="h-[2px] my-2 bg-gray-600 border-0 dark:bg-gray-400">
                       
@@ -139,10 +139,7 @@
                             </div>
                             {% endfor %}
                           </div>  
-                          <button type="submit" class="text-lg text-gray-700 border-b border-gray-100 hover:bg-gray-50
-                            md:hover:bg-transparent md:border-0 md:hover:text-green-700 md:p-0 dark:text-white
-                             dark:hover:bg-gray-700 dark:hover:text-green-500 md:dark:hover:bg-transparent
-                              dark:border-gray-700">Show Selected Stories</button>
+                          <button id="tags-submit-btn" type="submit" class="text-lg fb-btn-primary py-1.5">Show Selected Stories</button>
                         </form>
                   </div>
               </li>
@@ -152,7 +149,7 @@
                  md:hover:text-green-700 md:p-0 dark:text-white md:dark:hover:text-white
                   dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent
                    dark:border-gray-700">
-                   Create New Story</a>
+                   New Story</a>
               </li>
 
               <!-- search menu -->
@@ -279,6 +276,34 @@
               }
           }
           
+      });
+
+      // code to disable submit button if no checkboxes are checked
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log("setting up event listeners for checkboxes");
+        const form = document.getElementById('tags-form');
+        const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+        const submitButton = document.getElementById('tags-submit-btn');
+    
+        function updateSubmitButtonState() {
+          console.log("updating submit button state");
+          const anyChecked = Array.from(checkboxes).some(checkbox => checkbox.checked);
+          submitButton.disabled = !anyChecked;
+          if (anyChecked) {
+            submitButton.style.backgroundColor = '';  // Reset to original background color
+            submitButton.style.cursor = 'pointer';
+          } else {
+            submitButton.style.backgroundColor = 'gray';
+            submitButton.style.cursor = 'not-allowed';
+          }
+        }
+    
+        checkboxes.forEach(checkbox => {
+          checkbox.addEventListener('change', updateSubmitButtonState);
+        });
+    
+        // Initial check in case some checkboxes are pre-checked
+        updateSubmitButtonState();
       });
     </script>
 
