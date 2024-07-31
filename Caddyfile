@@ -8,8 +8,9 @@ mccalliefamilystories.com {
 
     log {
         output file /var/log/caddy/access.log
-        format console
+        format json
     }
+    
 
     @http {
         protocol http

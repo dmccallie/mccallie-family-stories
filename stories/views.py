@@ -1,4 +1,4 @@
-from django.http import HttpResponseBadRequest, JsonResponse
+from django.http import HttpResponseBadRequest, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, render
 
 from .image_utils import resize_and_reorient_image
@@ -29,25 +29,66 @@ def story_test(request, id):
 
 @login_required
 def story_list(request):
-    # get the published stories and order them by the published date
-    # published = Story.objects.filter(published=True).order_by('-published_datetime')
-
-    # and get unpublished stories, order them by the last updated date
-    # unpublished = Story.objects.filter(published=False).order_by('-last_updated')
 
     # all_stories = Story.objects.all().order_by('-last_updated')
     page_number = request.GET.get('page', 1)
-    paginator = Paginator(Story.objects.all().order_by('-last_updated'), 6)
+    
+    # tags are passed like this:  ?tags=tag1&tags=tag2&tags=tag3 so use GETLIST not get
+    # be sure to pass the tags to the template so the tag filter can be displayed
+    # and tags get passed to story_detail to set up prev/next links
+
+    tags = request.GET.getlist('tags', None)
+    print(f"story list request got page:{page_number} tags:{tags}")
+
+    uid = request.GET.get('uid', None)  # filter by this user id ?uid=2
+    print("story list request got uid: ", uid)
+
+    # make sure the uid has permission to view the stories
+    if uid:
+        if uid == str(request.user.id) or request.user.is_superuser:
+            pass
+        else:
+            messages.error(request, "You do not have permission to view this user's stories.")
+            return redirect('stories:story_list')
+    
+    # build query set adding in filters as needed
+    lazy_stories = Story.objects.all() # start with all
+    if tags:
+        lazy_stories = lazy_stories.filter(tags__name__in=tags) # filter by tags
+    if uid:
+        lazy_stories = lazy_stories.filter(user__id=uid) # filter by user
+
+    lazy_stories = lazy_stories.distinct().order_by('-last_updated')
+    
+    # todo - support tags that have embedded commas??
+    # negative sort order means largest value first, which is the most recent (largest date value)
+    # if tags or uid:
+    #     #paginator = Paginator(Story.objects.filter(tags__name__in=tags).distinct().order_by('-last_updated'),6)
+    #     paginator = Paginator(lazy_stories, 6)
+    #     print("tagged paginator count: ", paginator.count)
+    # else:
+    #     paginator = Paginator(Story.objects.all().order_by('-last_updated'), 6)
+    paginator = Paginator(lazy_stories, 6)
+
     page_obj = paginator.get_page(page_number)
 
+    # prepare the tags url extension to avoid doing it in the template language
+    if tags:
+        tags_url = "&".join([f"tags={tag}" for tag in tags])
+    else:
+        tags_url = ""
+
     if request.htmx:
-        print("got htmx request for page = ", page_number)
-        return render(request, 'stories/story_list_all_stories.html', {'published': None, 'unpublished': None, 'page_obj': page_obj})
+        print("story_list got HTMX request for page, tags = ", page_number, tags)
+        return render(request, 'stories/story_list_all_stories.html',
+                       {'tags':tags, 'tags_url':tags_url, 'uid':uid, 'page_obj': page_obj})
     
     else:
         print("got regular request for INITIAL page = ", page_number)
+        print("story_list non htmx render has tags: ", tags)
+        print("story_list non htmx render has total pages, count: ", paginator.num_pages, paginator.count) 
         return render(request, 'stories/story_list.html', 
-                  {'published': None, 'unpublished': None, 'page_obj': page_obj}) # test just ret 1 page
+                  {'tags':tags, 'tags_url':tags_url, 'uid':uid, 'page_obj': page_obj}) # test just ret 1 page
 
 
 @login_required
@@ -116,6 +157,7 @@ def add_story(request, story_id=None):
                     msg = "Your story has been published!"
             
             story.save()
+            form.save_m2m() # save the many-to-many tag relationships
             messages.success(request, msg)
             return redirect('stories:story_list')
 
@@ -124,9 +166,49 @@ def add_story(request, story_id=None):
 @login_required
 def story_detail(request, story_id):
     story = get_object_or_404(Story, pk=story_id)
-    next_story = story.get_next_story()
-    previous_story = story.get_previous_story() 
-    #story_form = StoryForm(instance=story) # will expand markdown to html
+    print("story detail request = ", request.GET)
+
+    # are we in search mode? If so, no need for tags or uid
+    mode = request.GET.get('mode', None)
+    if mode and mode == 'search':
+        tags = None
+        uid = None
+        lazy_stories = None
+        previous_story = None
+        next_story = None   
+
+    else:
+
+        tags = request.GET.getlist('tags', None)
+        print("story detail gets tags = ", tags)
+        uid = request.GET.get('uid', None)  # filter by this user id ?uid=2
+        print("story detail got uid: ", uid)
+
+        # make sure the uid has permission to view the stories
+        if uid:
+            if uid == str(request.user.id) or request.user.is_superuser:
+                pass
+            else:
+                messages.error(request, "You do not have permission to view this user's stories.")
+                return redirect('stories:story_list')
+            
+        # build query set adding in filters as needed
+        # TODO consolodate this function with story_list code?
+        lazy_stories = Story.objects.all() # start with all
+        if tags:
+            lazy_stories = lazy_stories.filter(tags__name__in=tags) # filter by tags
+        if uid:
+            lazy_stories = lazy_stories.filter(user__id=uid) # filter by user
+
+        lazy_stories = lazy_stories.distinct().order_by('-last_updated')
+
+        # find the index of the current story
+        story_index = list(lazy_stories).index(story) # order is newer (larger date) to older (smaller)
+        
+        # get the next and previous stories. Next means older (smaller date). Prev means newer (larger date)
+        # todo is there better name than next/prev? Yes we are using Newer (prev) and Older (next)
+        previous_story = lazy_stories[story_index - 1] if story_index > 0 else None
+        next_story = lazy_stories[story_index + 1] if story_index < len(lazy_stories) - 1 else None
 
     # render the content to html
     content_html = md.render(story.content)
@@ -141,9 +223,18 @@ def story_detail(request, story_id):
         })    
 
     form = CommentForm()
+
+    # prepare the tags url extension to avoid doing it in the template language
+    # each next/prev has to pass this forward to calc next/prev ids
+    if tags:
+        tags_url = "&".join([f"tags={tag}" for tag in tags])
+    else:
+        tags_url = ""
+
     return render(request, 'stories/story_detail.html', {'story': story, 'content_html': content_html,
-                            'comment_tree': comment_tree, 'form': form,
-                            'next_story': next_story, 'previous_story': previous_story})
+                            'comment_tree': comment_tree, 'form': form, 'tags':tags, 'uid':uid,
+                            'next_story': next_story, 'previous_story': previous_story, 'tags_url': tags_url,
+                            'mode': mode})
 
 @login_required
 def unpublish_story(request, story_id):
@@ -169,6 +260,28 @@ def publish_story(request, story_id):
         return render(request, 'stories/story_list_one_story.html', {'story': story})
 
     return redirect('stories:story_list')
+
+@login_required
+def delete_story(request, story_id):
+    # coming from htmx-delete 
+    print("got delete request for story id = ", story_id, request.method)
+    if request.method == 'DELETE':
+        # add check for user ownership or superuser
+        story = get_object_or_404(Story, pk=story_id)
+        if request.user == story.user or request.user.is_superuser:
+            # print("ready to delete story: ", story.title, story.id)
+            story.delete()
+            messages.success(request, "Story deleted.")
+            # print("deleted story, redirecting to story_list")
+            # for htmx success delete, return empty html and status = 200
+            return HttpResponse(status=200)
+            # return redirect('stories:story_list')
+            # return render(request, 'stories/story_list_one_story.html', {'story': story})
+        else:
+            return HttpResponseBadRequest("Unauthorized to delete this story", status=204) # htmx 204 = no swap
+
+    return HttpResponseBadRequest("Invalid request method", status=204)
+
 
 @login_required
 def add_comment(request, story_id):
@@ -291,13 +404,6 @@ def search(request):
         'results': page_obj,
         'query': query,
     })
-
-                # SELECT rowid, title, snippet(stories_story_fts, -1, '<b>', '</b>', '...', 10), 
-                #     bm25(stories_story_fts, 10.0, 1.0) as rank
-                # FROM stories_story_fts
-                # WHERE stories_story_fts MATCH %s
-                # ORDER BY rank;
-
 
 import re
 

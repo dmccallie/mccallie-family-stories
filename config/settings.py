@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'stories',
     'profiles',
     'storages', # new, for aws S3 storage
+    'taggit', # new, for tags
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -113,6 +114,7 @@ TEMPLATES = [
                 
                  # `allauth` needs this from django
                 'django.template.context_processors.request',
+                'config.context_processors.base_context',  # Custom context for _base.html
             ],
         },
     },
@@ -221,8 +223,6 @@ INTERNAL_IPS = [
     "172.28.240.1",
 ]
 
-
-
 bucket_name = config('AWS_STORAGE_BUCKET_NAME')
 print("setting get os env bucket_name: ", bucket_name)
 MEDIA_URL = f'https://{bucket_name}.s3.amazonaws.com/'
@@ -247,6 +247,10 @@ EMAIL_HOST_USER = 'admin@mccalliefamilystories.com' # 'dmccallie@gmail.com' # 'a
 EMAIL_HOST_PASSWORD = 'mccallieclan1!' # 'njou gkea wgzz mbla' #'mccallieclan1!'
 
 # gmail njou gkea wgzz mbla
+
+# taggit settings
+TAGGIT_CASE_INSENSITIVE = True
+STANDARD_TAGS = ['story', 'recipe', 'travel', 'genealogy', 'history', 'humor']
 
 LOGGING = {
     'version': 1,

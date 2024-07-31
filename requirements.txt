@@ -14,4 +14,5 @@ python-decouple
 pytailwindcss
 gunicorn
 django-allauth[socialaccount]
+django-taggit
 faker

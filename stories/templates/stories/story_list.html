@@ -2,6 +2,8 @@
 
 {% extends "_base.html" %}
 
+{% load url_filters %} <!-- my custom filters to build urls -->
+
 {% load static %}
 
 {% block content %}
@@ -14,7 +16,12 @@
         </ul>
     {% endif %}
 
-    <h2 class="text-2xl mb-3 text-black dark:text-white">Recent Stories</h2>
+    <h2 class="text-2xl mb-3 text-black dark:text-white">
+        Selected Stories
+        {% if request.GET.tags %} 
+            <span class="text-lg">(filtered by tags: {{ tags|join:"," }}) </span>
+        {% endif %}
+    </h2>
     
     <!-- this will expand to include all first page stories -->
 

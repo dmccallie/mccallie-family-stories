@@ -31,4 +31,4 @@ def update_fts_table(sender, instance, **kwargs):
 @receiver(post_delete, sender=Story)
 def delete_from_fts_table(sender, instance, **kwargs):
     with connection.cursor() as cursor:
-        cursor.execute('DELETE FROM stories_story_fts WHERE rowid=?;', [instance.id])
+        cursor.execute('DELETE FROM stories_story_fts WHERE rowid=%s;', [instance.id])
