@@ -35,9 +35,11 @@
                 {{ story.summary|truncatewords:10 }}</p>
                 
             <hr class="h-px my-2 bg-gray-600 border-0 dark:bg-gray-400">
+
+            {% url 'stories:story_list' as base_url2 %}
             {% if story.tags.all %}
                 {% for tag in story.tags.all %}
-                    <a href="{% url 'stories:story_list' %}?tags={{tag.name}}"
+                    <a href="{% url_add_query_params base_url=base_url2 tags=tag uid=uid %}"
                         class="inline-block px-1 py-1 mr-1 text-xs font-semibold text-gray-700 bg-gray-200 rounded-full dark:bg-gray-600 dark:text-gray-200">
                         {{ tag.name }}
                     </a>
