@@ -13,6 +13,7 @@ boto3
 python-decouple
 pytailwindcss
 gunicorn
+cffi
 django-allauth[socialaccount]
 django-taggit
 faker
