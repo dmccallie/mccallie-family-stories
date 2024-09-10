@@ -22,6 +22,7 @@
 ```
 
 #### install local version of tailwindcss using:
+NO, should not need to install this - done by pytailwindcss pip script
 ```
         curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-linux-x64
         chmod +x tailwindcss-linux-x64
@@ -33,7 +34,8 @@
 Remember to run tailwinds in separate process (during debug):
 
 ```
-         ~/tailwindcss -i static/src/input.css -o static/src/output.css --watch
+        (pytailwindcss should have installed this)
+        tailwindcss -i static/src/input.css -o static/src/output.css --watch
 ```
 
 ### running the app locally:
