@@ -44,7 +44,10 @@ def story_list(request):
     print("story list request got uid: ", uid)
 
     # make sure the uid has permission to view the stories
+    # only if uid is specified, for showing "my stories" or a user's stories
+    # makes sure can't abuse the url to see only another user's stories
     if uid:
+        # make sure sent uid matches request user or is superuser
         if uid == str(request.user.id) or request.user.is_superuser:
             pass
         else:

@@ -1,0 +1,18 @@
+{% extends "_base.html" %}
+
+{% load static %}
+
+{% block content %}
+
+<h2 class="text-2xl mb-3 text-black dark:text-white">
+    Add Chat
+</h2>
+
+<form method="POST">
+    {% csrf_token %}
+    {{ chat_form.as_p }}
+    {{ blurb_form.as_p }}
+    <button class="mt-2" type="submit">Create Chat</button>
+</form>
+
+{% endblock content %}

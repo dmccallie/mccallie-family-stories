@@ -1,0 +1,30 @@
+{% extends "_base.html" %}
+
+{% load static %}
+
+{% block content %}
+
+<h1>Topic: {{ chat.topic }}</h1>
+<h2>Started by {{ chat.starter }} at {{ chat.published_datetime }}</h2>
+<p></p>
+<p class="mt-2 mb-2">Blurbs follow:</p>
+<div class="chat-blurbs">
+    {% for blurb in blurbs %}
+        <div class="blurb mt-3">
+            <p>{{ blurb.content }}</p>
+            <p class="text-sm">Posted by {{ blurb.author }} at {{ blurb.created_dttm }}</p>
+        </div>
+        <hr>
+    {% empty %}
+        <p>No blurbs yet. Be the first to contribute!</p>
+    {% endfor %}
+</div>
+
+<form method="POST" autocomplete="off" >
+    {% csrf_token %}
+    {{ blurb_form.as_p }}
+    <button type="submit">Add Another Blurb</button>
+</form>
+
+{% endblock content %}
+

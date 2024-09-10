@@ -26,6 +26,7 @@ urlpatterns = [
     path('', include(('home.urls', 'home'), namespace='home')),  # Including the home app urls (index home page)
     path('stories/', include(('stories.urls', 'stories'), namespace='stories')),  # Including the stories app urls
     path('profiles/', include(('profiles.urls', 'profiles'), namespace='profiles')),  # Including the profiles app urls
+    path('chats/', include(('chats.urls', 'chats'), namespace='chats')),  # Including the chats app urls
     path("__debug__/", include("debug_toolbar.urls")),  # Including the debug toolbar urls
 ]
 # this only generates something for DEBUG = True!

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'home',
     'stories',
     'profiles',
+    'chats',
     'storages', # new, for aws S3 storage
     'taggit', # new, for tags
     'django.contrib.admin',

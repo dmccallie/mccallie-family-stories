@@ -1,0 +1,41 @@
+<!-- chats/templates/chats/chat_list.html -->
+<!-- chat context is "chats" -->
+
+{% extends "_base.html" %}
+
+{% load url_filters %} <!-- my custom filters to build urls -->
+
+{% load static %}
+
+{% block content %}
+
+<h2 class="text-2xl mb-3 text-black dark:text-white">
+    Selected Chats
+    {% if request.GET.tags %} 
+        <span class="text-lg">(filtered by tags: {{ tags|join:"," }}) </span>
+    {% endif %}
+</h2>
+
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="text-black
+            dark:text-white {{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% if chats %}
+    <ul class="chat-list">
+        {% for chat in chats %}
+            <li>
+                <a href="{% url 'chats:chat_detail' chat.id %}">
+                    {{ chat.title }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+
+{% endif %}
+
+{% endblock content %}
