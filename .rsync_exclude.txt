@@ -7,3 +7,4 @@ debug.log
 .vscode
 staticfiles/
 static/src/output.css
+db.sqlite3

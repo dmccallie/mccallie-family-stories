@@ -53,3 +53,33 @@ stuff goes here
 1. settings.py - add to INSTALLED_APPS = []
 1. 
 ```
+
+### deploy to vps
+#### login to vps
+```
+ssh xxxxxx@yyyyyyy
+```
+
+#### copy stuff up
+```
+rsync -av --exclude-from='/home/david/python_projects/mccallie-family-stories/.rsync_exclude.txt' /home/david/python_projects/mccallie-family-stories/ xxxx@nn.nn.nn.nn:/home/david/python_projects/mccallie-family-stories
+```
+
+#### stop existing run
+```
+cd python_projects/mccallie-family-stories/
+docker-compose down
+docker-ps
+docker stop xxxxxxxxx
+```
+
+#### build and deploy new version (can take a few mins)
+```
+docker-compose -f docker-compose-caddy.yml up --build -d
+```
+#### monitor logs
+```
+cd logs/caddy
+sudo goaccess access.log --log-format=CADDY
+```
+

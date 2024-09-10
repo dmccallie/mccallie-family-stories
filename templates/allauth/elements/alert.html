@@ -1,6 +1,6 @@
 {% load i18n %}
 {% load allauth %}
-<div class="alert alert-xs {% if attrs.level == "error" %}alert-warning{% else %}alert-info{% endif %}">
+<div class="alert alert-xs text-xl text-gray-900 dark:text-white {% if attrs.level == "error" %}alert-warning text-red-900 dark:text-red-700{% else %}alert-info text-gray-900 dark:text-white{% endif %}">
     {% slot message %}
     {% endslot %}
 </div>
